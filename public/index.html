@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reality Check Chat</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
+        #messages { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+        .msg { margin: 5px 0; }
+        .username { font-weight: bold; color: #0066cc; }
+        .notice { color: #666; font-style: italic; }
+        #input-area { display: flex; margin-top: 10px; gap: 10px; }
+        #message-input { flex: 1; padding: 8px; }
+        button { padding: 8px 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Reality Check Room</h1>
+    <div id="login">
+        <input type="text" id="username-input" placeholder="Enter username">
+        <button onclick="joinRoom()">Join Chat</button>
+    </div>
+    <div id="chat" style="display:none">
+        <div id="messages"></div>
+        <div id="input-area">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <script>
+        let ws;
+        let username = '';
+        
+        function joinRoom() {
+            username = document.getElementById('username-input').value || 'Anonymous';
+            ws = new WebSocket('ws://' + window.location.host);
+            
+            ws.onopen = () => {
+                ws.send(JSON.stringify({ type: 'join', username }));
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('chat').style.display = 'block';
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const messages = document.getElementById('messages');
+                const div = document.createElement('div');
+                div.className = 'msg';
+                
+                if (data.type === 'message') {
+                    div.innerHTML = `<span class="username">${data.username}:</span> ${data.text}`;
+                } else if (data.type === 'notice') {
+                    div.className = 'notice';
+                    div.textContent = data.text;
+                } else if (data.type === 'presence') {
+                    div.className = 'notice';
+                    div.textContent = `Users in room (${data.count}): ${data.users.join(', ')}`;
+                }
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            };
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (text) {
+                ws.send(JSON.stringify({ type: 'message', text }));
+                input.value = '';
+            }
+        }
+        
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

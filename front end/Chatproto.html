@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reality Check Room</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #111827, #1f2937);
+      color: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .room {
+      width: min(900px, 100%);
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    }
+    .header {
+      padding: 16px 20px;
+      background: #1f2937;
+      border-bottom: 1px solid #374151;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .header h1 { margin: 0; font-size: 18px; }
+    .header .pill { background: #2563eb; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+    .content { display: grid; grid-template-columns: 2fr 1fr; min-height: 480px; }
+    .chat-panel { display: flex; flex-direction: column; border-right: 1px solid #374151; }
+    #messages { flex: 1; padding: 16px; overflow-y: auto; background: #0f172a; }
+    .message { margin-bottom: 12px; }
+    .message strong { color: #93c5fd; }
+    .message.system { color: #9ca3af; font-style: italic; }
+    .message .time { font-size: 11px; color: #64748b; margin-left: 8px; }
+    .composer { display: flex; gap: 10px; padding: 12px; background: #1f2937; }
+    .composer input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #4b5563; background: #111827; color: #f9fafb; }
+    .composer button { padding: 10px 16px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; }
+    .sidebar { padding: 16px; background: #111827; }
+    .sidebar h2 { margin: 0 0 12px; font-size: 16px; }
+    #users { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    #users li { padding: 8px 10px; border-radius: 8px; background: #1f2937; color: #d1d5db; }
+    .status { margin-top: 16px; font-size: 13px; color: #9ca3af; }
+    @media (max-width: 760px) { .content { grid-template-columns: 1fr; } .chat-panel { border-right: none; border-bottom: 1px solid #374151; } }
+  </style>
+</head>
+<body>
+  <div class="room">
+    <div class="header">
+      <h1>🎭 Reality Check Room</h1>
+      <span class="pill" id="presenceCount">0 online</span>
+    </div>
+    <div class="content">
+      <div class="chat-panel">
+        <div id="messages"></div>
+        <form class="composer" id="messageForm">
+          <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+      <aside class="sidebar">
+        <h2>Online now</h2>
+        <ul id="users"></ul>
+        <div class="status" id="status">Connecting...</div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const messageBox = document.getElementById('messages');
+    const userList = document.getElementById('users');
+    const statusEl = document.getElementById('status');
+    const presenceCount = document.getElementById('presenceCount');
+    const form = document.getElementById('messageForm');
+    const input = document.getElementById('messageInput');
+
+    const storageKey = 'reality-chat-username';
+    let username = localStorage.getItem(storageKey) || `User${Math.floor(Math.random() * 1000)}`;
+    localStorage.setItem(storageKey, username);
+
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const socket = new WebSocket(`${protocol}${window.location.host}`);
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderMessage(message) {
+      const row = document.createElement('div');
+      row.className = 'message';
+      if (message.type === 'notice') {
+        row.classList.add('system');
+        row.innerHTML = `<div>${escapeHtml(message.text)}</div>`;
+      } else {
+        const time = new Date(message.ts || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        row.innerHTML = `<div><strong>${escapeHtml(message.username)}</strong><span class="time">${time}</span></div><div>${escapeHtml(message.text)}</div>`;
+      }
+      messageBox.appendChild(row);
+      messageBox.scrollTop = messageBox.scrollHeight;
+    }
+
+    function renderUsers(users) {
+      userList.innerHTML = '';
+      users.forEach((name) => {
+        const item = document.createElement('li');
+        item.textContent = name;
+        userList.appendChild(item);
+      });
+      presenceCount.textContent = `${users.length} online`;
+    }
+
+    socket.addEventListener('open', () => {
+      statusEl.textContent = 'Connected. Joining room...';
+      socket.send(JSON.stringify({ type: 'join', username }));
+    });
+
+    socket.addEventListener('message', (event) => {
+      const payload = JSON.parse(event.data);
+      if (payload.type === 'presence') {
+        renderUsers(payload.users || []);
+        statusEl.textContent = `Connected to ${payload.room}`;
+        return;
+      }
+      if (payload.type === 'joined') {
+        statusEl.textContent = `Joined as ${payload.username}`;
+        return;
+      }
+      if (payload.type === 'message' || payload.type === 'notice') {
+        renderMessage(payload);
+      }
+    });
+
+    socket.addEventListener('close', () => {
+      statusEl.textContent = 'Disconnected. Refresh to reconnect.';
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      socket.send(JSON.stringify({ type: 'message', text }));
+      input.value = '';
+    });
+  </script>
+</body>
+</html>
