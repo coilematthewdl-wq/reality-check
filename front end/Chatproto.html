@@ -5,91 +5,843 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reality Check Room</title>
   <style>
-    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    
     body {
       margin: 0;
       min-height: 100vh;
-      background: linear-gradient(135deg, #111827, #1f2937);
-      color: #f9fafb;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #f1f5f9;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 16px;
+      overflow-x: hidden;
     }
+    
     .room {
-      width: min(900px, 100%);
-      background: #111827;
-      border: 1px solid #374151;
-      border-radius: 16px;
+      width: min(1400px, 100%);
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     }
+    
     .header {
-      padding: 16px 20px;
-      background: #1f2937;
-      border-bottom: 1px solid #374151;
+      padding: 20px 24px;
+      background: linear-gradient(90deg, #1e293b, #0f172a);
+      border-bottom: 1px solid #334155;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
     }
-    .header h1 { margin: 0; font-size: 18px; }
-    .header .pill { background: #2563eb; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
-    .content { display: grid; grid-template-columns: 2fr 1fr; min-height: 480px; }
-    .chat-panel { display: flex; flex-direction: column; border-right: 1px solid #374151; }
-    #messages { flex: 1; padding: 16px; overflow-y: auto; background: #0f172a; }
-    .message { margin-bottom: 12px; }
-    .message strong { color: #93c5fd; }
-    .message.system { color: #9ca3af; font-style: italic; }
-    .message .time { font-size: 11px; color: #64748b; margin-left: 8px; }
-    .composer { display: flex; gap: 10px; padding: 12px; background: #1f2937; }
-    .composer input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #4b5563; background: #111827; color: #f9fafb; }
-    .composer button { padding: 10px 16px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; }
-    .sidebar { padding: 16px; background: #111827; }
-    .sidebar h2 { margin: 0 0 12px; font-size: 16px; }
-    #users { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-    #users li { padding: 8px 10px; border-radius: 8px; background: #1f2937; color: #d1d5db; }
-    .status { margin-top: 16px; font-size: 13px; color: #9ca3af; }
-    @media (max-width: 760px) { .content { grid-template-columns: 1fr; } .chat-panel { border-right: none; border-bottom: 1px solid #374151; } }
+    
+    .header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    
+    .header .pills {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .header .pill { 
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      padding: 6px 12px; 
+      border-radius: 20px; 
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .content { 
+      display: grid; 
+      grid-template-columns: 1.5fr 1fr; 
+      min-height: 600px;
+      max-height: 75vh;
+    }
+    
+    .chat-panel { 
+      display: flex; 
+      flex-direction: column; 
+      border-right: 1px solid #334155; 
+    }
+    
+    #messages { 
+      flex: 1; 
+      padding: 16px 20px; 
+      overflow-y: auto;
+      background: #0f172a;
+    }
+    
+    #messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    #messages::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    
+    #messages::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    
+    .message { 
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+    
+    .message:hover {
+      background-color: #1e293b;
+    }
+    
+    .message strong { 
+      color: #60a5fa;
+      font-weight: 600;
+    }
+    
+    .message.system { 
+      color: #94a3b8; 
+      font-style: italic;
+      background-color: transparent;
+      padding: 8px 0;
+    }
+    
+    .message .time { 
+      font-size: 11px; 
+      color: #64748b; 
+      margin-left: 8px;
+    }
+    
+    .message.submission {
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+      border: 1px solid #2563eb;
+      border-radius: 12px;
+    }
+    
+    .submission-content {
+      padding: 8px 0;
+    }
+    
+    .submission-type {
+      display: inline-block;
+      background: #2563eb;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 8px;
+      text-transform: uppercase;
+    }
+    
+    .submission-text {
+      color: #e2e8f0;
+      margin-top: 4px;
+    }
+    
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      flex-wrap: wrap;
+    }
+    
+    .toolbar-btn {
+      padding: 8px 12px;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e2e8f0;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .toolbar-btn:hover {
+      background: #1e293b;
+      border-color: #64748b;
+    }
+    
+    .toolbar-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .composer { 
+      display: flex; 
+      gap: 10px; 
+      padding: 12px 16px; 
+      background: #1e293b;
+      border-top: 1px solid #334155;
+    }
+    
+    .composer input { 
+      flex: 1; 
+      padding: 10px 14px; 
+      border-radius: 8px; 
+      border: 1px solid #475569; 
+      background: #0f172a; 
+      color: #f1f5f9;
+      font-size: 14px;
+    }
+    
+    .composer input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+    
+    .composer button { 
+      padding: 10px 20px; 
+      border: none; 
+      border-radius: 8px; 
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white; 
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .composer button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .sidebar { 
+      padding: 16px; 
+      background: #0f172a;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    
+    .sidebar-section h2 { 
+      margin: 0 0 12px; 
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
+    }
+    
+    #users { 
+      list-style: none; 
+      padding: 0; 
+      margin: 0; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px; 
+    }
+    
+    #users li { 
+      padding: 8px 10px; 
+      border-radius: 8px; 
+      background: #1e293b; 
+      color: #cbd5e1;
+      font-size: 13px;
+      border-left: 3px solid #2563eb;
+    }
+    
+    .voting-section {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+    
+    .vote-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .vote-btn {
+      padding: 8px 12px;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    
+    .vote-btn:hover {
+      background: #1e293b;
+      border-color: #64748b;
+    }
+    
+    .vote-btn.active {
+      background: #3b82f6;
+      border-color: #2563eb;
+      color: white;
+    }
+    
+    .vote-btn.real { border-left: 3px solid #10b981; }
+    .vote-btn.fake { border-left: 3px solid #ef4444; }
+    .vote-btn.unsure { border-left: 3px solid #f59e0b; }
+    
+    .status { 
+      margin-top: 12px;
+      font-size: 12px; 
+      color: #64748b;
+      text-align: center;
+    }
+    
+    .confidence-section {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      display: none;
+    }
+    
+    .confidence-section.active {
+      display: block;
+    }
+    
+    .confidence-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    
+    .confidence-slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #0f172a;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    .confidence-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    
+    .confidence-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    
+    .confidence-value {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #60a5fa;
+      margin-top: 8px;
+    }
+    
+    .submit-confidence {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    
+    .submit-confidence:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .submit-confidence:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .vote-status {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 8px;
+      text-align: center;
+    }
+    
+    .vote-status.waiting {
+      color: #f59e0b;
+    }
+    
+    .vote-status.complete {
+      color: #10b981;
+    }
+    
+    .results-section {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      display: none;
+    }
+    
+    .results-section.active {
+      display: block;
+    }
+    
+    .result-item {
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      background: #0f172a;
+      border-left: 3px solid #2563eb;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .result-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+    
+    .result-bar {
+      height: 4px;
+      background: #334155;
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+    
+    .result-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      border-radius: 2px;
+      animation: fillBar 0.5s ease-out;
+    }
+    
+    @keyframes fillBar {
+      from { width: 0; }
+      to { width: var(--width); }
+    }
+    
+    .result-score {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    
+    .truth-source {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      display: none;
+    }
+    
+    .truth-source.active {
+      display: block;
+    }
+    
+    .truth-source-btn {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    
+    .truth-source-btn:hover {
+      background: #1d4ed8;
+    }
+    
+    .source-content {
+      margin-top: 10px;
+      padding: 10px;
+      background: #0f172a;
+      border-radius: 8px;
+      border-left: 3px solid #10b981;
+      font-size: 12px;
+      color: #cbd5e1;
+      display: none;
+    }
+    
+    .source-content.show {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      animation: fadeIn 0.2s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #334155;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .modal h2 {
+      margin: 0 0 16px;
+      color: #f1f5f9;
+      font-size: 18px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    
+    .modal-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .btn-cancel {
+      background: #475569;
+      color: #f1f5f9;
+    }
+    
+    .btn-cancel:hover {
+      background: #64748b;
+    }
+    
+    .btn-submit {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+    
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    @media (max-width: 1024px) { 
+      .content { 
+        grid-template-columns: 1fr; 
+      } 
+      .chat-panel { 
+        border-right: none; 
+        border-bottom: 1px solid #334155; 
+      }
+    }
   </style>
 </head>
 <body>
   <div class="room">
     <div class="header">
       <h1>🎭 Reality Check Room</h1>
-      <span class="pill" id="presenceCount">0 online</span>
+      <div class="pills">
+        <span class="pill" id="presenceCount">0 online</span>
+        <span class="pill" id="statusPill">Connecting...</span>
+      </div>
     </div>
+    
     <div class="content">
       <div class="chat-panel">
         <div id="messages"></div>
+        
+        <div class="toolbar">
+          <button class="toolbar-btn" id="newsBtn" title="Submit a news headline">
+            📰 News
+          </button>
+          <button class="toolbar-btn" id="imageBtn" title="Submit an image/photo">
+            🖼️ Image
+          </button>
+          <button class="toolbar-btn" id="linkBtn" title="Submit a URL">
+            🔗 Link
+          </button>
+        </div>
+        
         <form class="composer" id="messageForm">
-          <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off" />
+          <input id="messageInput" type="text" placeholder="Type a message or submit content..." autocomplete="off" />
           <button type="submit">Send</button>
         </form>
       </div>
+      
       <aside class="sidebar">
-        <h2>Online now</h2>
-        <ul id="users"></ul>
-        <div class="status" id="status">Connecting...</div>
+        <div class="sidebar-section">
+          <h2>Online now</h2>
+          <ul id="users"></ul>
+        </div>
+        
+        <div class="sidebar-section voting-section">
+          <h2>Quick Vote</h2>
+          <div class="vote-buttons">
+            <button class="vote-btn real" id="voteReal">✓ REAL</button>
+            <button class="vote-btn fake" id="voteFake">✗ FAKE</button>
+            <button class="vote-btn unsure" id="voteUnsure">? NOT SURE</button>
+          </div>
+          <div class="vote-status" id="voteStatus"></div>
+        </div>
+        
+        <div class="sidebar-section confidence-section" id="confidenceSection">
+          <h2>Confidence Poll</h2>
+          <div class="confidence-label">Your Confidence Level:</div>
+          <input type="range" class="confidence-slider" id="confidenceSlider" min="0" max="100" value="50">
+          <div class="confidence-value" id="confidenceValue">50%</div>
+          <button class="submit-confidence" id="submitConfidence">Submit Confidence</button>
+          <div class="vote-status" id="confidenceStatus"></div>
+        </div>
+        
+        <div class="sidebar-section results-section" id="resultsSection">
+          <h2>Results</h2>
+          <div id="resultsContainer"></div>
+        </div>
+        
+        <div class="sidebar-section truth-source" id="truthSource">
+          <button class="truth-source-btn" id="sourceBtn">📋 View Truth Source</button>
+          <div class="source-content" id="sourceContent"></div>
+        </div>
+        
+        <div class="status">
+          <div id="status">Connecting...</div>
+        </div>
       </aside>
     </div>
   </div>
 
+  <!-- Modal for News Submission -->
+  <div class="modal" id="newsModal">
+    <div class="modal-content">
+      <h2>📰 Submit News Headline</h2>
+      <div class="form-group">
+        <label>Headline</label>
+        <input type="text" id="newsHeadline" placeholder="Enter the news headline...">
+      </div>
+      <div class="form-group">
+        <label>Source (optional)</label>
+        <input type="text" id="newsSource" placeholder="e.g., BBC News, Reuters...">
+      </div>
+      <div class="form-group">
+        <label>Description (optional)</label>
+        <textarea id="newsDescription" placeholder="Add context or details..."></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal('newsModal')">Cancel</button>
+        <button class="btn-submit" onclick="submitNews()">Submit & Poll</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Image Submission -->
+  <div class="modal" id="imageModal">
+    <div class="modal-content">
+      <h2>🖼️ Submit Image/Photo</h2>
+      <div class="form-group">
+        <label>Image URL</label>
+        <input type="url" id="imageUrl" placeholder="Paste image URL...">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="imageDescription" placeholder="What do you think this image shows?"></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal('imageModal')">Cancel</button>
+        <button class="btn-submit" onclick="submitImage()">Submit & Poll</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Link Submission -->
+  <div class="modal" id="linkModal">
+    <div class="modal-content">
+      <h2>🔗 Submit URL</h2>
+      <div class="form-group">
+        <label>URL</label>
+        <input type="url" id="linkUrl" placeholder="Paste URL...">
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="linkTitle" placeholder="What should we call this?">
+      </div>
+      <div class="form-group">
+        <label>Description (optional)</label>
+        <textarea id="linkDescription" placeholder="Add context..."></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal('linkModal')">Cancel</button>
+        <button class="btn-submit" onclick="submitLink()">Submit & Poll</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // ============ GAME STATE ============
+    const gameState = {
+      currentPoll: null,
+      myVote: null,
+      myConfidence: null,
+      votes: {},
+      confidence: {},
+      pollActive: false,
+      votesSubmitted: new Set(),
+      confidenceSubmitted: new Set(),
+      allConfidences: [],
+      correctAnswer: null,
+    };
+
+    // ============ DOM ELEMENTS ============
     const messageBox = document.getElementById('messages');
     const userList = document.getElementById('users');
     const statusEl = document.getElementById('status');
+    const statusPill = document.getElementById('statusPill');
     const presenceCount = document.getElementById('presenceCount');
     const form = document.getElementById('messageForm');
     const input = document.getElementById('messageInput');
 
+    // Vote elements
+    const voteRealBtn = document.getElementById('voteReal');
+    const voteFakeBtn = document.getElementById('voteFake');
+    const voteUnsureBtn = document.getElementById('voteUnsure');
+    const voteStatus = document.getElementById('voteStatus');
+
+    // Confidence elements
+    const confidenceSection = document.getElementById('confidenceSection');
+    const confidenceSlider = document.getElementById('confidenceSlider');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const submitConfidenceBtn = document.getElementById('submitConfidence');
+    const confidenceStatus = document.getElementById('confidenceStatus');
+
+    // Results elements
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsContainer = document.getElementById('resultsContainer');
+
+    // Truth source
+    const truthSource = document.getElementById('truthSource');
+    const sourceBtn = document.getElementById('sourceBtn');
+    const sourceContent = document.getElementById('sourceContent');
+
+    // Storage & session
     const storageKey = 'reality-chat-username';
     let username = localStorage.getItem(storageKey) || `User${Math.floor(Math.random() * 1000)}`;
     localStorage.setItem(storageKey, username);
 
+    // WebSocket
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const socket = new WebSocket(`${protocol}${window.location.host}`);
 
+    // ============ UTILITY FUNCTIONS ============
     function escapeHtml(value) {
       return value
         .replace(/&/g, '&amp;')
@@ -99,20 +851,58 @@
         .replace(/'/g, '&#39;');
     }
 
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('show');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+    }
+
+    // ============ MESSAGE RENDERING ============
     function renderMessage(message) {
       const row = document.createElement('div');
       row.className = 'message';
+      
       if (message.type === 'notice') {
         row.classList.add('system');
         row.innerHTML = `<div>${escapeHtml(message.text)}</div>`;
+      } else if (message.type === 'submission') {
+        row.classList.add('submission');
+        const time = new Date(message.ts || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const submissionType = message.contentType ? message.contentType.toUpperCase() : 'CONTENT';
+        
+        let content = '';
+        if (message.contentType === 'news') {
+          content = `<strong>${escapeHtml(message.headline)}</strong>`;
+          if (message.source) content += `<br><small>Source: ${escapeHtml(message.source)}</small>`;
+        } else if (message.contentType === 'image') {
+          content = `<img src="${message.imageUrl}" style="max-width: 100%; border-radius: 8px; margin-top: 8px;">`;
+          if (message.description) content += `<br><small>${escapeHtml(message.description)}</small>`;
+        } else if (message.contentType === 'link') {
+          content = `<a href="${message.linkUrl}" target="_blank">${escapeHtml(message.linkTitle)}</a>`;
+          if (message.description) content += `<br><small>${escapeHtml(message.description)}</small>`;
+        }
+        
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(message.username)}</strong>
+            <span class="submission-type">${submissionType}</span>
+            <span class="time">${time}</span>
+          </div>
+          <div class="submission-content">${content}</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 6px;">🎯 Confidence poll started!</div>
+        `;
       } else {
         const time = new Date(message.ts || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         row.innerHTML = `<div><strong>${escapeHtml(message.username)}</strong><span class="time">${time}</span></div><div>${escapeHtml(message.text)}</div>`;
       }
+      
       messageBox.appendChild(row);
       messageBox.scrollTop = messageBox.scrollHeight;
     }
 
+    // ============ USER & PRESENCE ============
     function renderUsers(users) {
       userList.innerHTML = '';
       users.forEach((name) => {
@@ -123,29 +913,295 @@
       presenceCount.textContent = `${users.length} online`;
     }
 
+    // ============ SUBMISSION FUNCTIONS ============
+    function submitNews() {
+      const headline = document.getElementById('newsHeadline').value.trim();
+      if (!headline) {
+        alert('Please enter a headline');
+        return;
+      }
+
+      const source = document.getElementById('newsSource').value.trim();
+      const description = document.getElementById('newsDescription').value.trim();
+      const pollId = 'poll_' + Date.now();
+
+      const submission = {
+        type: 'submission',
+        contentType: 'news',
+        pollId,
+        headline,
+        source,
+        description,
+        username,
+        ts: Date.now(),
+      };
+
+      socket.send(JSON.stringify(submission));
+      
+      // Start poll
+      gameState.currentPoll = pollId;
+      gameState.pollActive = true;
+      activateConfidencePoll(pollId);
+      
+      closeModal('newsModal');
+      document.getElementById('newsHeadline').value = '';
+      document.getElementById('newsSource').value = '';
+      document.getElementById('newsDescription').value = '';
+    }
+
+    function submitImage() {
+      const imageUrl = document.getElementById('imageUrl').value.trim();
+      if (!imageUrl) {
+        alert('Please enter an image URL');
+        return;
+      }
+
+      const description = document.getElementById('imageDescription').value.trim();
+      const pollId = 'poll_' + Date.now();
+
+      const submission = {
+        type: 'submission',
+        contentType: 'image',
+        pollId,
+        imageUrl,
+        description,
+        username,
+        ts: Date.now(),
+      };
+
+      socket.send(JSON.stringify(submission));
+      gameState.currentPoll = pollId;
+      gameState.pollActive = true;
+      activateConfidencePoll(pollId);
+      
+      closeModal('imageModal');
+      document.getElementById('imageUrl').value = '';
+      document.getElementById('imageDescription').value = '';
+    }
+
+    function submitLink() {
+      const linkUrl = document.getElementById('linkUrl').value.trim();
+      const linkTitle = document.getElementById('linkTitle').value.trim();
+      
+      if (!linkUrl || !linkTitle) {
+        alert('Please enter a URL and title');
+        return;
+      }
+
+      const description = document.getElementById('linkDescription').value.trim();
+      const pollId = 'poll_' + Date.now();
+
+      const submission = {
+        type: 'submission',
+        contentType: 'link',
+        pollId,
+        linkUrl,
+        linkTitle,
+        description,
+        username,
+        ts: Date.now(),
+      };
+
+      socket.send(JSON.stringify(submission));
+      gameState.currentPoll = pollId;
+      gameState.pollActive = true;
+      activateConfidencePoll(pollId);
+      
+      closeModal('linkModal');
+      document.getElementById('linkUrl').value = '';
+      document.getElementById('linkTitle').value = '';
+      document.getElementById('linkDescription').value = '';
+    }
+
+    // ============ CONFIDENCE POLLING ============
+    function activateConfidencePoll(pollId) {
+      gameState.myConfidence = null;
+      gameState.votesSubmitted.clear();
+      gameState.allConfidences = [];
+      
+      confidenceSection.classList.add('active');
+      resultsSection.classList.remove('active');
+      truthSource.classList.remove('active');
+      
+      confidenceSlider.value = 50;
+      confidenceValue.textContent = '50%';
+      confidenceStatus.textContent = 'Waiting for responses...';
+      confidenceStatus.className = 'vote-status waiting';
+      submitConfidenceBtn.disabled = false;
+      submitConfidenceBtn.textContent = 'Submit Confidence';
+    }
+
+    function submitConfidenceVote() {
+      const confidence = parseInt(confidenceSlider.value);
+      gameState.myConfidence = confidence;
+      gameState.votesSubmitted.add(username);
+      
+      const voteMsg = {
+        type: 'confidence_vote',
+        pollId: gameState.currentPoll,
+        username,
+        confidence,
+        vote: gameState.myVote,
+        ts: Date.now(),
+      };
+
+      socket.send(JSON.stringify(voteMsg));
+      
+      submitConfidenceBtn.disabled = true;
+      submitConfidenceBtn.textContent = '✓ Submitted';
+      confidenceStatus.textContent = 'Your vote submitted!';
+      confidenceStatus.className = 'vote-status complete';
+    }
+
+    // ============ RESULTS DISPLAY ============
+    function displayResults(allVotes) {
+      confidenceSection.classList.remove('active');
+      resultsSection.classList.add('active');
+      truthSource.classList.add('active');
+      
+      resultsContainer.innerHTML = '';
+      gameState.allConfidences = allVotes;
+
+      // Animate reveal
+      allVotes.forEach((vote, index) => {
+        setTimeout(() => {
+          const item = document.createElement('div');
+          item.className = 'result-item';
+          
+          const score = calculateScore(vote.confidence, gameState.correctAnswer === vote.vote);
+          const barWidth = vote.confidence;
+          
+          item.innerHTML = `
+            <div class="result-name">${escapeHtml(vote.username)}: ${vote.confidence}%</div>
+            <div class="result-bar">
+              <div class="result-fill" style="--width: ${barWidth}%"></div>
+            </div>
+            <div class="result-score">Score: ${score.toFixed(1)} pts</div>
+          `;
+          
+          resultsContainer.appendChild(item);
+        }, index * 150);
+      });
+    }
+
+    function calculateScore(confidence, isCorrect) {
+      if (isCorrect) {
+        return confidence;
+      } else {
+        return 100 - confidence;
+      }
+    }
+
+    // ============ VOTE HANDLERS ============
+    voteRealBtn.addEventListener('click', () => {
+      gameState.myVote = 'REAL';
+      voteRealBtn.classList.add('active');
+      voteFakeBtn.classList.remove('active');
+      voteUnsureBtn.classList.remove('active');
+      voteStatus.textContent = 'Voted: REAL ✓';
+    });
+
+    voteFakeBtn.addEventListener('click', () => {
+      gameState.myVote = 'FAKE';
+      voteFakeBtn.classList.add('active');
+      voteRealBtn.classList.remove('active');
+      voteUnsureBtn.classList.remove('active');
+      voteStatus.textContent = 'Voted: FAKE ✗';
+    });
+
+    voteUnsureBtn.addEventListener('click', () => {
+      gameState.myVote = 'NOT SURE';
+      voteUnsureBtn.classList.add('active');
+      voteRealBtn.classList.remove('active');
+      voteFakeBtn.classList.remove('active');
+      voteStatus.textContent = 'Voted: NOT SURE ?';
+    });
+
+    confidenceSlider.addEventListener('input', (e) => {
+      confidenceValue.textContent = e.target.value + '%';
+    });
+
+    submitConfidenceBtn.addEventListener('click', submitConfidenceVote);
+
+    // ============ TOOLBAR HANDLERS ============
+    document.getElementById('newsBtn').addEventListener('click', () => openModal('newsModal'));
+    document.getElementById('imageBtn').addEventListener('click', () => openModal('imageModal'));
+    document.getElementById('linkBtn').addEventListener('click', () => openModal('linkModal'));
+
+    // ============ MODAL CLOSE ============
+    window.addEventListener('click', (event) => {
+      ['newsModal', 'imageModal', 'linkModal'].forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (event.target === modal) {
+          closeModal(modalId);
+        }
+      });
+    });
+
+    // ============ TRUTH SOURCE ============
+    sourceBtn.addEventListener('click', () => {
+      sourceContent.classList.toggle('show');
+      if (sourceContent.classList.contains('show')) {
+        sourceBtn.textContent = '📋 Hide Truth Source';
+        sourceContent.innerHTML = `
+          <strong>Verified Source:</strong><br>
+          This content has been verified by fact-checkers. 
+          <a href="#" style="color: #60a5fa;">Click here to view original source</a>
+        `;
+      } else {
+        sourceBtn.textContent = '📋 View Truth Source';
+      }
+    });
+
+    // ============ WEBSOCKET ============
     socket.addEventListener('open', () => {
       statusEl.textContent = 'Connected. Joining room...';
+      statusPill.textContent = 'Connecting...';
       socket.send(JSON.stringify({ type: 'join', username }));
     });
 
     socket.addEventListener('message', (event) => {
       const payload = JSON.parse(event.data);
+      
       if (payload.type === 'presence') {
         renderUsers(payload.users || []);
         statusEl.textContent = `Connected to ${payload.room}`;
+        statusPill.textContent = `${payload.count} online`;
         return;
       }
+      
       if (payload.type === 'joined') {
         statusEl.textContent = `Joined as ${payload.username}`;
+        statusPill.textContent = 'Online';
         return;
       }
-      if (payload.type === 'message' || payload.type === 'notice') {
+      
+      if (payload.type === 'message' || payload.type === 'notice' || payload.type === 'submission') {
         renderMessage(payload);
+      }
+      
+      if (payload.type === 'confidence_vote') {
+        gameState.votes[payload.username] = payload.confidence;
+        if (!gameState.votesSubmitted.has(payload.username)) {
+          gameState.votesSubmitted.add(payload.username);
+          confidenceStatus.textContent = `${gameState.votesSubmitted.size} votes submitted...`;
+        }
+      }
+      
+      if (payload.type === 'poll_results') {
+        gameState.correctAnswer = payload.correctAnswer;
+        displayResults(payload.results);
       }
     });
 
     socket.addEventListener('close', () => {
       statusEl.textContent = 'Disconnected. Refresh to reconnect.';
+      statusPill.textContent = 'Offline';
+    });
+
+    socket.addEventListener('error', () => {
+      statusEl.textContent = 'Connection error. Refresh to reconnect.';
+      statusPill.textContent = 'Error';
     });
 
     form.addEventListener('submit', (event) => {
