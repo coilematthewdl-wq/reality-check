@@ -1,78 +1,168 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Reality Check Chat</title>
-    <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
-        #messages { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
-        .msg { margin: 5px 0; }
-        .username { font-weight: bold; color: #0066cc; }
-        .notice { color: #666; font-style: italic; }
-        #input-area { display: flex; margin-top: 10px; gap: 10px; }
-        #message-input { flex: 1; padding: 8px; }
-        button { padding: 8px 16px; cursor: pointer; }
-    </style>
+<style>
+  * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+  body { 
+    background: #1a1a1a; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    margin: 0; 
+  }
+  
+  .login-card {
+    width: 400px;
+    background: #2d2d2d;
+    border-radius: 16px;
+    border: 1px solid #444;
+    padding: 40px 32px;
+    color: #eee;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  
+  .logo {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #6ecbf5;
+  }
+  
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 6px;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #1a1a1a;
+    color: #eee;
+    font-size: 16px;
+    outline: none;
+    transition: 0.2s;
+  }
+  
+  .form-group input:focus {
+    border-color: #6ecbf5;
+  }
+  
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: #4a90d9;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-top: 8px;
+  }
+  
+  .login-btn:hover {
+    background: #357abd;
+  }
+  
+  .signup-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #888;
+  }
+  
+  .signup-link a {
+    color: #6ecbf5;
+    text-decoration: none;
+  }
+  
+  .signup-link a:hover {
+    text-decoration: underline;
+  }
+  
+  .error-msg {
+    background: #c62828;
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    display: none;
+    margin-bottom: 16px;
+  }
+</style>
 </head>
 <body>
-    <h1>Reality Check Room</h1>
-    <div id="login">
-        <input type="text" id="username-input" placeholder="Enter username">
-        <button onclick="joinRoom()">Join Chat</button>
-    </div>
-    <div id="chat" style="display:none">
-        <div id="messages"></div>
-        <div id="input-area">
-            <input type="text" id="message-input" placeholder="Type a message...">
-            <button onclick="sendMessage()">Send</button>
-        </div>
+
+<div class="login-card">
+  <div class="logo">🎭 Reality Check</div>
+  <div class="subtitle">Enter the room and vote on the truth</div>
+  
+  <div class="error-msg" id="errorMsg">Invalid credentials</div>
+  
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Enter your username" required>
     </div>
     
-    <script>
-        let ws;
-        let username = '';
-        
-        function joinRoom() {
-            username = document.getElementById('username-input').value || 'Anonymous';
-            ws = new WebSocket('ws://' + window.location.host);
-            
-            ws.onopen = () => {
-                ws.send(JSON.stringify({ type: 'join', username }));
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('chat').style.display = 'block';
-            };
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                const messages = document.getElementById('messages');
-                const div = document.createElement('div');
-                div.className = 'msg';
-                
-                if (data.type === 'message') {
-                    div.innerHTML = `<span class="username">${data.username}:</span> ${data.text}`;
-                } else if (data.type === 'notice') {
-                    div.className = 'notice';
-                    div.textContent = data.text;
-                } else if (data.type === 'presence') {
-                    div.className = 'notice';
-                    div.textContent = `Users in room (${data.count}): ${data.users.join(', ')}`;
-                }
-                messages.appendChild(div);
-                messages.scrollTop = messages.scrollHeight;
-            };
-        }
-        
-        function sendMessage() {
-            const input = document.getElementById('message-input');
-            const text = input.value.trim();
-            if (text) {
-                ws.send(JSON.stringify({ type: 'message', text }));
-                input.value = '';
-            }
-        }
-        
-        document.getElementById('message-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-    </script>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required>
+    </div>
+    
+    <button type="submit" class="login-btn">Log In</button>
+  </form>
+  
+  <div class="signup-link">
+    Don't have an account? <a href="#">Sign up</a>
+  </div>
+</div>
+
+<script>
+  function handleLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+    
+    // Simple validation (replace with real auth later)
+    if (username === '' || password === '') {
+      errorMsg.textContent = 'Please fill in all fields';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    
+    // Demo credentials (hardcoded for testing)
+    if (username === 'admin' && password === '123456') {
+      errorMsg.style.display = 'none';
+      alert('Login successful! Redirecting to room...');
+      window.location.href = 'Chatproto.html'; // Uncomment for real redirect
+    } else {
+      errorMsg.textContent = 'Invalid username or password';
+      errorMsg.style.display = 'block';
+    }
+  }
+</script>
+
 </body>
 </html>
