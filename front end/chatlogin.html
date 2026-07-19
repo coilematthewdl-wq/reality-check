@@ -153,7 +153,12 @@
     }
     
     // Demo credentials (hardcoded for testing)
-    if (username === 'admin' && password === '123456') {
+    const validUsers = {
+      'admin': '123456',
+      'dave': '111111'
+    };
+    
+    if (validUsers[username] && validUsers[username] === password) {
       errorMsg.style.display = 'none';
       alert('Login successful! Redirecting to room...');
       window.location.href = 'Chatproto.html'; // Uncomment for real redirect
