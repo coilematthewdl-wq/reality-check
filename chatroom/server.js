@@ -142,6 +142,33 @@ wss.on('connection', (ws) => {
         ts: Date.now()
       });
     }
+
+    if (msg.type === 'submission' && ws.username) {
+      broadcast({
+        type: 'submission',
+        contentType: msg.contentType,
+        pollId: msg.pollId,
+        headline: msg.headline,
+        imageUrl: msg.imageUrl,
+        linkUrl: msg.linkUrl,
+        linkTitle: msg.linkTitle,
+        source: msg.source,
+        description: msg.description,
+        username: ws.username,
+        ts: Date.now()
+      });
+    }
+
+    if (msg.type === 'confidence_vote' && ws.username) {
+      broadcast({
+        type: 'confidence_vote',
+        pollId: msg.pollId,
+        username: ws.username,
+        confidence: msg.confidence,
+        vote: msg.vote,
+        ts: Date.now()
+      });
+    }
   });
 
   ws.on('close', () => {
