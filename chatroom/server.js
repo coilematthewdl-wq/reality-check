@@ -3,40 +3,84 @@ const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');
 
-const PUBLIC_DIR = path.join(__dirname, '..');
 const PORT = process.env.PORT || 3000;
 const ROOM_NAME = 'Reality Check Room';
+const STATIC_DIRS = [
+  path.join(__dirname, '..', 'public'),
+  path.join(__dirname, '..', 'front end')
+];
+
+function getContentType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const map = {
+    '.html': 'text/html',
+    '.js': 'application/javascript',
+    '.css': 'text/css',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml'
+  };
+  return map[ext] || 'application/octet-stream';
+}
+
+function resolveStaticFile(requestPath) {
+  const decodedPath = decodeURIComponent((requestPath || '/').split('?')[0]);
+  const normalizedPath = decodedPath === '/' ? '/index.html' : decodedPath;
+  const relativePath = normalizedPath.replace(/^\/+/, '');
+
+  const candidates = [];
+  if (normalizedPath === '/index.html' || normalizedPath === '/') {
+    candidates.push(path.join(STATIC_DIRS[0], 'index.html'));
+    candidates.push(path.join(STATIC_DIRS[1], 'index.html'));
+  }
+
+  if (normalizedPath.startsWith('/public/')) {
+    candidates.push(path.join(STATIC_DIRS[0], normalizedPath.slice('/public/'.length)));
+  } else if (normalizedPath.startsWith('/front%20end/')) {
+    candidates.push(path.join(STATIC_DIRS[1], decodeURIComponent(normalizedPath.slice('/front%20end/'.length))));
+  } else if (normalizedPath.startsWith('/front end/')) {
+    candidates.push(path.join(STATIC_DIRS[1], normalizedPath.slice('/front end/'.length)));
+  }
+
+  candidates.push(path.join(STATIC_DIRS[0], relativePath));
+  candidates.push(path.join(STATIC_DIRS[1], relativePath));
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
 
 const server = http.createServer((req, res) => {
-  const requestPath = req.url === '/' ? '/Chatproto.html' : req.url;
-  const safePath = requestPath.split('?')[0];
-  const filePath = path.join(PUBLIC_DIR, decodeURIComponent(safePath));
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.writeHead(405, { 'Content-Type': 'text/plain' });
+    res.end('Method not allowed');
+    return;
+  }
 
-  if (!filePath.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403);
-    res.end('Forbidden');
+  const filePath = resolveStaticFile(req.url);
+  if (!filePath) {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
     return;
   }
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404);
-      res.end('Not found');
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Error loading file');
       return;
     }
 
-    const ext = path.extname(filePath).toLowerCase();
-    const map = {
-      '.html': 'text/html',
-      '.js': 'application/javascript',
-      '.css': 'text/css',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.svg': 'image/svg+xml'
-    };
-
-    res.writeHead(200, { 'Content-Type': map[ext] || 'application/octet-stream' });
-    res.end(data);
+    res.writeHead(200, { 'Content-Type': getContentType(filePath) });
+    if (req.method === 'HEAD') {
+      res.end();
+    } else {
+      res.end(data);
+    }
   });
 });
 
