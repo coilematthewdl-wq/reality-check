@@ -2,9 +2,9 @@
   "name": "simple-chat",
   "version": "1.0.0",
   "description": "Minimal multi-user chat using WebSockets",
-  "main": "server.js",
+  "main": "codes/chatroom/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node ./codes/chatroom/server.js"
   },
   "dependencies": {
     "ws": "^8.13.0"
