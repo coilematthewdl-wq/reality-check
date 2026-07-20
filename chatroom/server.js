@@ -24,6 +24,12 @@ function getContentType(filePath) {
   return map[ext] || 'application/octet-stream';
 }
 
+function setNoCacheHeaders(res) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+}
+
 function resolveStaticFile(requestPath) {
   const decodedPath = decodeURIComponent((requestPath || '/').split('?')[0]);
   const normalizedPath = decodedPath === '/' ? '/index.html' : decodedPath;
@@ -74,6 +80,7 @@ const server = http.createServer((req, res) => {
       return;
     }
 
+    setNoCacheHeaders(res);
     res.writeHead(200, { 'Content-Type': getContentType(filePath) });
     if (req.method === 'HEAD') {
       res.end();
