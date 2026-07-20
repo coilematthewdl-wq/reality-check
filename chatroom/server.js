@@ -154,6 +154,7 @@ wss.on('connection', (ws) => {
         linkTitle: msg.linkTitle,
         source: msg.source,
         description: msg.description,
+        correctAnswer: msg.correctAnswer,
         username: ws.username,
         ts: Date.now()
       });

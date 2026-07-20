@@ -754,6 +754,14 @@
         <small style="display:block; color:#64748b; margin-top:6px;">Upload a screenshot or photo saved as JPG/JPEG.</small>
       </div>
       <div class="form-group">
+        <label>Is this image real or fake?</label>
+        <select id="imageTruthAnswer">
+          <option value="">Choose an answer</option>
+          <option value="REAL">Real</option>
+          <option value="FAKE">Fake</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Description</label>
         <textarea id="imageDescription" placeholder="What do you think this image shows?"></textarea>
       </div>
@@ -800,6 +808,8 @@
       confidenceSubmitted: new Set(),
       allConfidences: [],
       correctAnswer: null,
+      connectedUsers: 1,
+      resultsVisible: false,
     };
 
     // ============ DOM ELEMENTS ============
@@ -974,6 +984,12 @@
         return;
       }
 
+      const truthAnswer = document.getElementById('imageTruthAnswer').value;
+      if (!truthAnswer) {
+        alert('Please tell us whether the image is real or fake.');
+        return;
+      }
+
       const description = document.getElementById('imageDescription').value.trim();
       const pollId = 'poll_' + Date.now();
 
@@ -985,6 +1001,7 @@
           pollId,
           imageUrl,
           description,
+          correctAnswer: truthAnswer,
           username,
           ts: Date.now(),
         };
@@ -1000,6 +1017,7 @@
       
       closeModal('imageModal');
       document.getElementById('imageFile').value = '';
+      document.getElementById('imageTruthAnswer').value = '';
       document.getElementById('imageDescription').value = '';
     }
 
@@ -1037,27 +1055,64 @@
       document.getElementById('linkDescription').value = '';
     }
 
-    // ============ CONFIDENCE POLLING ============
+    function setVoteControlsLocked(locked) {
+      voteRealBtn.disabled = locked;
+      voteFakeBtn.disabled = locked;
+      voteUnsureBtn.disabled = locked;
+      submitConfidenceBtn.disabled = locked;
+      if (locked) {
+        submitConfidenceBtn.textContent = '✓ Locked in';
+      } else {
+        submitConfidenceBtn.textContent = 'Submit Confidence';
+      }
+    }
+
     function activateConfidencePoll(pollId) {
+      gameState.currentPoll = pollId;
+      gameState.myVote = null;
       gameState.myConfidence = null;
+      gameState.votes = {};
       gameState.votesSubmitted.clear();
       gameState.allConfidences = [];
+      gameState.resultsVisible = false;
       
       confidenceSection.classList.add('active');
       resultsSection.classList.remove('active');
       truthSource.classList.remove('active');
       
+      voteRealBtn.classList.remove('active');
+      voteFakeBtn.classList.remove('active');
+      voteUnsureBtn.classList.remove('active');
+      voteStatus.textContent = 'Choose REAL, FAKE, or NOT SURE';
       confidenceSlider.value = 50;
       confidenceValue.textContent = '50%';
       confidenceStatus.textContent = 'Waiting for responses...';
       confidenceStatus.className = 'vote-status waiting';
-      submitConfidenceBtn.disabled = false;
-      submitConfidenceBtn.textContent = 'Submit Confidence';
+      setVoteControlsLocked(false);
+    }
+
+    function revealResultsIfReady() {
+      if (gameState.resultsVisible) return;
+      if (gameState.votesSubmitted.size < Math.max(1, gameState.connectedUsers)) return;
+
+      const results = Object.values(gameState.votes);
+      if (!results.length) return;
+
+      gameState.resultsVisible = true;
+      displayResults(results);
+      confidenceStatus.textContent = 'Results revealed!';
+      confidenceStatus.className = 'vote-status complete';
     }
 
     function submitConfidenceVote() {
+      if (!gameState.myVote) {
+        alert('Please choose REAL, FAKE, or NOT SURE before submitting.');
+        return;
+      }
+
       const confidence = parseInt(confidenceSlider.value);
       gameState.myConfidence = confidence;
+      gameState.votes[username] = { username, vote: gameState.myVote, confidence };
       gameState.votesSubmitted.add(username);
       
       const voteMsg = {
@@ -1071,10 +1126,10 @@
 
       socket.send(JSON.stringify(voteMsg));
       
-      submitConfidenceBtn.disabled = true;
-      submitConfidenceBtn.textContent = '✓ Submitted';
+      setVoteControlsLocked(true);
       confidenceStatus.textContent = 'Your vote submitted!';
       confidenceStatus.className = 'vote-status complete';
+      revealResultsIfReady();
     }
 
     // ============ RESULTS DISPLAY ============
@@ -1086,7 +1141,6 @@
       resultsContainer.innerHTML = '';
       gameState.allConfidences = allVotes;
 
-      // Animate reveal
       allVotes.forEach((vote, index) => {
         setTimeout(() => {
           const item = document.createElement('div');
@@ -1118,6 +1172,7 @@
 
     // ============ VOTE HANDLERS ============
     voteRealBtn.addEventListener('click', () => {
+      if (submitConfidenceBtn.disabled) return;
       gameState.myVote = 'REAL';
       voteRealBtn.classList.add('active');
       voteFakeBtn.classList.remove('active');
@@ -1126,6 +1181,7 @@
     });
 
     voteFakeBtn.addEventListener('click', () => {
+      if (submitConfidenceBtn.disabled) return;
       gameState.myVote = 'FAKE';
       voteFakeBtn.classList.add('active');
       voteRealBtn.classList.remove('active');
@@ -1134,6 +1190,7 @@
     });
 
     voteUnsureBtn.addEventListener('click', () => {
+      if (submitConfidenceBtn.disabled) return;
       gameState.myVote = 'NOT SURE';
       voteUnsureBtn.classList.add('active');
       voteRealBtn.classList.remove('active');
@@ -1188,6 +1245,7 @@
       const payload = JSON.parse(event.data);
       
       if (payload.type === 'presence') {
+        gameState.connectedUsers = payload.count || 1;
         renderUsers(payload.users || []);
         statusEl.textContent = `Connected to ${payload.room}`;
         statusPill.textContent = `${payload.count} online`;
@@ -1200,21 +1258,30 @@
         return;
       }
       
-      if (payload.type === 'message' || payload.type === 'notice' || payload.type === 'submission') {
+      if (payload.type === 'message' || payload.type === 'notice') {
         renderMessage(payload);
+      }
+
+      if (payload.type === 'submission') {
+        renderMessage(payload);
+        gameState.correctAnswer = payload.correctAnswer || null;
+        if (payload.pollId) {
+          activateConfidencePoll(payload.pollId);
+        }
       }
       
       if (payload.type === 'confidence_vote') {
-        gameState.votes[payload.username] = payload.confidence;
+        if (payload.pollId !== gameState.currentPoll) return;
+        gameState.votes[payload.username] = {
+          username: payload.username,
+          vote: payload.vote,
+          confidence: payload.confidence,
+        };
         if (!gameState.votesSubmitted.has(payload.username)) {
           gameState.votesSubmitted.add(payload.username);
           confidenceStatus.textContent = `${gameState.votesSubmitted.size} votes submitted...`;
         }
-      }
-      
-      if (payload.type === 'poll_results') {
-        gameState.correctAnswer = payload.correctAnswer;
-        displayResults(payload.results);
+        revealResultsIfReady();
       }
     });
 
