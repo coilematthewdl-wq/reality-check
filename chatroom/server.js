@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 const ROOM_NAME = 'Reality Check Room';
 const STATIC_DIRS = [
   path.join(__dirname, '..', 'public'),
-  path.join(__dirname, '..', 'front end')
+  path.join(__dirname, '..', 'frontend')
 ];
 
 function getContentType(filePath) {
@@ -36,10 +36,8 @@ function resolveStaticFile(requestPath) {
 
   if (normalizedPath.startsWith('/public/')) {
     candidates.push(path.join(STATIC_DIRS[0], normalizedPath.slice('/public/'.length)));
-  } else if (normalizedPath.startsWith('/front%20end/')) {
-    candidates.push(path.join(STATIC_DIRS[1], decodeURIComponent(normalizedPath.slice('/front%20end/'.length))));
-  } else if (normalizedPath.startsWith('/front end/')) {
-    candidates.push(path.join(STATIC_DIRS[1], normalizedPath.slice('/front end/'.length)));
+  } else if (normalizedPath.startsWith('/frontend/')) {
+    candidates.push(path.join(STATIC_DIRS[1], normalizedPath.slice('/frontend/'.length)));
   }
 
   candidates.push(path.join(STATIC_DIRS[0], relativePath));
