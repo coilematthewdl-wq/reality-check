@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reality Check · Sign up</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    /* ---------- sign-up card (consistent with login) ---------- */
+    .signup-card {
+      width: 100%;
+      max-width: 400px;
+      background: #2d2d2d;
+      border-radius: 16px;
+      border: 1px solid #444;
+      padding: 40px 32px;
+      color: #eee;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #6ecbf5;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #1a1a1a;
+      color: #eee;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: #6ecbf5;
+    }
+
+    .signup-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #4a90d9;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+
+    .signup-btn:hover {
+      background: #357abd;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #888;
+    }
+
+    .login-link a {
+      color: #6ecbf5;
+      text-decoration: none;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-msg {
+      background: #c62828;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+      margin-bottom: 16px;
+    }
+
+    .success-msg {
+      background: #2e7d32;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+      margin-bottom: 16px;
+    }
+
+    /* small tweak for password hint */
+    .hint {
+      font-size: 12px;
+      color: #777;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="signup-card">
+  <div class="logo">🎭 Reality Check</div>
+  <div class="subtitle">Create your account · join the vote</div>
+
+  <!-- feedback messages -->
+  <div class="error-msg" id="errorMsg">Error message</div>
+  <div class="success-msg" id="successMsg">Account created! 🎉</div>
+
+  <form id="signupForm" onsubmit="handleSignup(event)">
+    <div class="form-group">
+      <label>Full name</label>
+      <input type="text" id="fullname" placeholder="e.g. Alex Rivera" required>
+    </div>
+
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Choose a username" required>
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com" required>
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Min 6 characters" required minlength="6">
+      <div class="hint">Use at least 6 characters</div>
+    </div>
+
+    <button type="submit" class="signup-btn">Create account</button>
+  </form>
+
+  <div class="login-link">
+    Already have an account? <a href="chatlogin.html" id="backToLogin">Log in</a>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ----- DOM refs -----
+    const form = document.getElementById('signupForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+
+    const fullname = document.getElementById('fullname');
+    const username = document.getElementById('username');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+
+    // ----- helper: hide all messages -----
+    function hideAllMessages() {
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+    }
+
+    // ----- handle sign-up -----
+    window.handleSignup = function(e) {
+      e.preventDefault();
+      hideAllMessages();
+
+      // trim values
+      const nameVal = fullname.value.trim();
+      const userVal = username.value.trim();
+      const emailVal = email.value.trim();
+      const passVal = password.value.trim();
+
+      // --- validation ---
+      if (!nameVal || !userVal || !emailVal || !passVal) {
+        errorMsg.textContent = 'Please fill in all fields.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      // email simple check
+      if (!emailVal.includes('@') || !emailVal.includes('.')) {
+        errorMsg.textContent = 'Please enter a valid email address.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      if (passVal.length < 6) {
+        errorMsg.textContent = 'Password must be at least 6 characters.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      // Save the account locally so the login page can authenticate it.
+      const accounts = JSON.parse(localStorage.getItem('reality-check-accounts') || '[]');
+      const existingAccount = accounts.find(account => account.username === userVal);
+
+      if (existingAccount) {
+        errorMsg.textContent = 'That username already exists. Please choose another one.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      accounts.push({ name: nameVal, username: userVal, password: passVal, email: emailVal });
+      localStorage.setItem('reality-check-accounts', JSON.stringify(accounts));
+
+      // Remember the signed-up user for the chat experience.
+      localStorage.setItem('reality-check-current-user', JSON.stringify({ name: nameVal, username: userVal }));
+      localStorage.setItem('reality-chat-username', nameVal);
+
+      sessionStorage.setItem('signup_demo', 'true');
+      sessionStorage.setItem('signup_username', userVal);
+
+      successMsg.textContent = `✨ Account created for ${nameVal}! You can now log in.`;
+      successMsg.style.display = 'block';
+
+      const btn = form.querySelector('.signup-btn');
+      btn.disabled = true;
+      btn.textContent = '✅ Saved!';
+      setTimeout(() => {
+        window.location.href = 'chatlogin.html';
+      }, 1000);
+    };
+
+    // ----- "Log in" link: go back to login page -----
+    document.getElementById('backToLogin').addEventListener('click', function(e) {
+      e.preventDefault();
+      window.location.href = 'chatlogin.html';
+    });
+
+    // ----- extra: hide messages when typing -----
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', hideAllMessages);
+    });
+
+    // ----- if there's a success from previous signup, show a subtle hint? -----
+    // (not needed, but we could check sessionStorage)
+    if (sessionStorage.getItem('signup_demo') === 'true') {
+      // optional: show a small "welcome back" but we'll keep it clean.
+      // We don't auto-show anything to avoid confusion.
+    }
+  })();
+</script>
+
+<!-- 
+  This sign-up page is a companion to the login page.
+  It includes validation, success/error feedback, and a "Log in" link 
+  that simulates going back to the login screen.
+  Styling matches the dark theme of the original login card.
+-->
+</body>
+</html>

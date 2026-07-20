@@ -747,10 +747,11 @@
   <!-- Modal for Image Submission -->
   <div class="modal" id="imageModal">
     <div class="modal-content">
-      <h2>🖼️ Submit Image/Photo</h2>
+      <h2>🖼️ Submit Screenshot</h2>
       <div class="form-group">
-        <label>Image URL</label>
-        <input type="url" id="imageUrl" placeholder="Paste image URL...">
+        <label>Choose a JPEG/JPG image</label>
+        <input type="file" id="imageFile" accept="image/jpeg,image/jpg,.jpg,.jpeg">
+        <small style="display:block; color:#64748b; margin-top:6px;">Upload a screenshot or photo saved as JPG/JPEG.</small>
       </div>
       <div class="form-group">
         <label>Description</label>
@@ -834,7 +835,9 @@
 
     // Storage & session
     const storageKey = 'reality-chat-username';
-    let username = localStorage.getItem(storageKey) || `User${Math.floor(Math.random() * 1000)}`;
+    const savedUser = JSON.parse(localStorage.getItem('reality-check-current-user') || 'null');
+    const savedName = savedUser?.name?.trim() || savedUser?.username?.trim();
+    let username = savedName || localStorage.getItem(storageKey) || `User${Math.floor(Math.random() * 1000)}`;
     localStorage.setItem(storageKey, username);
 
     // WebSocket
@@ -949,33 +952,54 @@
       document.getElementById('newsDescription').value = '';
     }
 
-    function submitImage() {
-      const imageUrl = document.getElementById('imageUrl').value.trim();
-      if (!imageUrl) {
-        alert('Please enter an image URL');
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read the selected image.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function submitImage() {
+      const imageFile = document.getElementById('imageFile').files[0];
+      if (!imageFile) {
+        alert('Please choose a JPEG/JPG image file');
+        return;
+      }
+
+      const isJpeg = imageFile.type === 'image/jpeg' || imageFile.type === 'image/jpg' || /\.jpe?g$/i.test(imageFile.name);
+      if (!isJpeg) {
+        alert('Please choose a JPEG/JPG image file');
         return;
       }
 
       const description = document.getElementById('imageDescription').value.trim();
       const pollId = 'poll_' + Date.now();
 
-      const submission = {
-        type: 'submission',
-        contentType: 'image',
-        pollId,
-        imageUrl,
-        description,
-        username,
-        ts: Date.now(),
-      };
+      try {
+        const imageUrl = await readFileAsDataUrl(imageFile);
+        const submission = {
+          type: 'submission',
+          contentType: 'image',
+          pollId,
+          imageUrl,
+          description,
+          username,
+          ts: Date.now(),
+        };
 
-      socket.send(JSON.stringify(submission));
-      gameState.currentPoll = pollId;
-      gameState.pollActive = true;
-      activateConfidencePoll(pollId);
+        socket.send(JSON.stringify(submission));
+        gameState.currentPoll = pollId;
+        gameState.pollActive = true;
+        activateConfidencePoll(pollId);
+      } catch (error) {
+        alert(error.message || 'Unable to upload the selected image.');
+        return;
+      }
       
       closeModal('imageModal');
-      document.getElementById('imageUrl').value = '';
+      document.getElementById('imageFile').value = '';
       document.getElementById('imageDescription').value = '';
     }
 

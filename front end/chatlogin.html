@@ -133,7 +133,7 @@
   </form>
   
   <div class="signup-link">
-    Don't have an account? <a href="#">Sign up</a>
+    Don't have an account? <a href="signup.html">Sign up</a>
   </div>
 </div>
 
@@ -152,16 +152,14 @@
       return;
     }
     
-    // Demo credentials (hardcoded for testing)
-    const validUsers = {
-      'admin': '123456',
-      'dave': '111111'
-    };
+    const accounts = JSON.parse(localStorage.getItem('reality-check-accounts') || '[]');
+    const account = accounts.find(user => user.username === username && user.password === password);
     
-    if (validUsers[username] && validUsers[username] === password) {
+    if (account) {
       errorMsg.style.display = 'none';
-      alert('Login successful! Redirecting to room...');
-      window.location.href = 'Chatproto.html'; // Uncomment for real redirect
+      localStorage.setItem('reality-check-current-user', JSON.stringify({ name: account.name, username: account.username }));
+      localStorage.setItem('reality-chat-username', account.name);
+      window.location.href = 'Chatproto.html';
     } else {
       errorMsg.textContent = 'Invalid username or password';
       errorMsg.style.display = 'block';
