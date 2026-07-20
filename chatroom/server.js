@@ -18,6 +18,7 @@ function getContentType(filePath) {
     '.css': 'text/css',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
     '.svg': 'image/svg+xml'
   };
   return map[ext] || 'application/octet-stream';
