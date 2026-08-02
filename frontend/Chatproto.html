@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reality Check Room</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- React & Recharts -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/recharts.min.js"></script>
+
   <style>
     * { box-sizing: border-box; font-family: system-ui, sans-serif; margin: 0; }
     body {
@@ -54,40 +64,175 @@
     .message strong { color: #93c5fd; }
     .message.system { color: #9ca3af; font-style: italic; }
     .message .time { font-size: 11px; color: #64748b; margin-left: 8px; }
+    .message.gut-check-notice { 
+      background: rgba(212, 175, 55, 0.1); 
+      border-left: 3px solid #D4AF37; 
+      padding: 6px 12px; 
+      border-radius: 4px;
+      color: #D4AF37;
+    }
     .composer { display: flex; gap: 10px; padding: 12px; background: #1f2937; }
     .composer input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #4b5563; background: #111827; color: #f9fafb; }
     .composer button { padding: 10px 16px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; }
-    .sidebar-chat { padding: 16px; background: #111827; }
-    .sidebar-chat h2 { margin: 0 0 12px; font-size: 16px; }
-    #users { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-    #users li { padding: 8px 10px; border-radius: 8px; background: #1f2937; color: #d1d5db; }
-    .status { margin-top: 16px; font-size: 13px; color: #9ca3af; }
-    @media (max-width: 760px) { .chat-content { grid-template-columns: 1fr; } .chat-panel { border-right: none; border-bottom: 1px solid #374151; } }
-
-    /* GUT CHECK SIDEBAR */
-    .gut-sidebar {
-      flex: 1;
-      min-width: 320px;
-      max-width: 450px;
-      background: #14181C;
-      border: 1px solid #2a323a;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-      position: sticky;
-      top: 16px;
-      max-height: 800px;
+    .sidebar-chat { 
+      padding: 16px; 
+      background: #111827;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      max-height: 600px;
+    }
+    .sidebar-chat h2 { margin: 0 0 8px; font-size: 16px; }
+    #users { 
+      list-style: none; 
+      padding: 0; 
+      margin: 0; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 4px;
+      max-height: 120px;
       overflow-y: auto;
     }
-    .gut-sidebar::-webkit-scrollbar { width: 6px; }
-    .gut-sidebar::-webkit-scrollbar-track { background: #1b2127; border-radius: 8px; }
-    .gut-sidebar::-webkit-scrollbar-thumb { background: #3a4553; border-radius: 8px; }
-    #gutCheckMount { width: 100%; }
-
-    @media (max-width: 1024px) {
-      .app-layout { flex-direction: column; }
-      .gut-sidebar { position: static; max-width: 100%; max-height: 700px; }
+    #users li { padding: 6px 10px; border-radius: 6px; background: #1f2937; color: #d1d5db; font-size: 13px; }
+    .status { font-size: 12px; color: #9ca3af; }
+    .sidebar-divider {
+      border: none;
+      border-top: 1px solid #374151;
+      margin: 8px 0;
     }
+
+    /* GUT CHECK (embedded in sidebar) */
+    .gut-check-embedded {
+      flex: 1;
+      background: #14181C;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid #2a323a;
+      overflow-y: auto;
+      max-height: 500px;
+    }
+    .gut-check-embedded::-webkit-scrollbar { width: 4px; }
+    .gut-check-embedded::-webkit-scrollbar-track { background: #1b2127; border-radius: 4px; }
+    .gut-check-embedded::-webkit-scrollbar-thumb { background: #3a4553; border-radius: 4px; }
+
+    /* Gut Check styles (scoped) */
+    .gc-embedded {
+      --gc-ink: #14181C;
+      --gc-panel: #1B2127;
+      --gc-panel-2: #222933;
+      --gc-brass: #D4AF37;
+      --gc-teal: #3FA796;
+      --gc-rust: #E2725B;
+      --gc-fog: #F2EFE9;
+      --gc-muted: #8B96A3;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--gc-fog);
+      font-size: 12px;
+    }
+    .gc-embedded * { box-sizing: border-box; }
+    .gc-embedded .gc-panel { background: var(--gc-panel); border: 1px solid rgba(242,239,233,0.08); border-radius: 8px; }
+    .gc-embedded .gc-section { padding: 10px; margin-bottom: 8px; }
+    .gc-embedded .gc-section-title { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gc-muted); margin-bottom: 6px; }
+    .gc-embedded .gc-brand { display: flex; align-items: center; gap: 6px; color: var(--gc-brass); margin-bottom: 6px; }
+    .gc-embedded .gc-brand-title { font-size: 16px; font-weight: 700; letter-spacing: 0.04em; font-family: 'Space Grotesk', sans-serif; }
+    .gc-embedded .gc-lede { color: var(--gc-muted); font-size: 10px; line-height: 1.4; margin: 2px 0 8px; }
+    .gc-embedded .gc-chip-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    .gc-embedded .gc-chip {
+      padding: 3px 8px; border-radius: 999px; border: 1px solid rgba(242,239,233,0.18);
+      font-size: 9px; cursor: pointer; color: var(--gc-muted); background: transparent;
+      transition: all 0.15s ease; font-family: 'Inter', sans-serif;
+    }
+    .gc-embedded .gc-chip:hover { border-color: rgba(242,239,233,0.4); color: var(--gc-fog); }
+    .gc-embedded .gc-chip.active { border-color: var(--gc-brass); color: var(--gc-brass); background: rgba(212,175,55,0.08); }
+    .gc-embedded .gc-btn {
+      padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 11px;
+      cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 4px;
+      transition: opacity 0.15s ease; font-family: 'Inter', sans-serif;
+    }
+    .gc-embedded .gc-btn-primary { background: var(--gc-brass); color: var(--gc-ink); }
+    .gc-embedded .gc-btn-primary[disabled] { opacity: 0.35; cursor: not-allowed; }
+    .gc-embedded .gc-btn-primary:hover:not([disabled]) { opacity: 0.88; }
+    .gc-embedded .gc-btn-ghost { background: transparent; color: var(--gc-fog); border: 1px solid rgba(242,239,233,0.22); font-size: 10px; padding: 4px 10px; }
+    .gc-embedded .gc-start-btn { width: 100%; justify-content: center; margin-top: 4px; }
+    .gc-embedded .gc-content-card { padding: 10px; margin-bottom: 8px; }
+    .gc-embedded .gc-content-card p { font-size: 12px; line-height: 1.4; margin: 0; }
+    .gc-embedded .gc-content-card-small { padding: 8px; margin-bottom: 6px; }
+    .gc-embedded .gc-content-card-small p { font-size: 11px; color: var(--gc-muted); }
+    .gc-embedded .gc-dial { margin-bottom: 10px; }
+    .gc-embedded .gc-dial-title { font-size: 10px; font-weight: 600; margin-bottom: 4px; }
+    .gc-embedded .gc-dial-labels { display: flex; justify-content: space-between; align-items: center; font-size: 8px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gc-muted); margin-bottom: 2px; }
+    .gc-embedded .gc-dial-readout { color: var(--gc-fog); font-size: 9px; background: var(--gc-panel-2); padding: 1px 6px; border-radius: 999px; font-family: 'IBM Plex Mono', monospace; }
+    .gc-embedded input.gc-range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 999px;
+      background: linear-gradient(90deg, var(--gc-rust) 0%, #4A5460 50%, var(--gc-teal) 100%); outline: none; cursor: pointer; }
+    .gc-embedded input.gc-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%;
+      background: var(--gc-fog); border: 2px solid var(--gc-brass); cursor: pointer; }
+    .gc-embedded .gc-tag {
+      display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 999px;
+      font-weight: 600; font-size: 8px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .gc-embedded .gc-cat-tag { background: rgba(242,239,233,0.06); color: var(--gc-muted); margin-bottom: 6px; font-size: 8px; }
+    .gc-embedded .gc-tag-true { background: rgba(63,167,150,0.15); color: var(--gc-teal); border: 1px solid rgba(63,167,150,0.4); }
+    .gc-embedded .gc-tag-false { background: rgba(226,114,91,0.15); color: var(--gc-rust); border: 1px solid rgba(226,114,91,0.4); }
+    .gc-embedded .gc-reveal-tags { display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap; }
+    .gc-embedded .gc-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .gc-embedded .gc-eyebrow { font-size: 8px; letter-spacing: 0.08em; color: var(--gc-muted); font-family: 'IBM Plex Mono', monospace; }
+    .gc-embedded .gc-topbar-score { color: var(--gc-brass); }
+    .gc-embedded .gc-points-row { display: flex; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
+    .gc-embedded .gc-points-label { font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gc-muted); margin-bottom: 1px; }
+    .gc-embedded .gc-points-value { font-size: 13px; color: var(--gc-fog); font-family: 'IBM Plex Mono', monospace; }
+    .gc-embedded .gc-points-value-total { color: var(--gc-brass); }
+    .gc-embedded .gc-gapbar { margin-bottom: 12px; }
+    .gc-embedded .gc-gapbar-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gc-muted); }
+    .gc-embedded .gc-gapbar-track { position: relative; height: 4px; background: var(--gc-panel-2); border-radius: 999px; margin-top: 12px; }
+    .gc-embedded .gc-gapbar-fill { position: absolute; top: 50%; height: 2px; transform: translateY(-50%); border-radius: 2px; opacity: 0.6; }
+    .gc-embedded .gc-gapbar-mark { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 8px; height: 8px; border-radius: 50%; }
+    .gc-embedded .gc-gapbar-you { background: var(--gc-fog); border: 1.5px solid var(--gc-brass); z-index: 2; }
+    .gc-embedded .gc-gapbar-actual { background: transparent; border: 1.5px solid var(--gc-teal); }
+    .gc-embedded .gc-gapbar-mark span { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 6px; white-space: nowrap; color: var(--gc-muted); }
+    .gc-embedded .gc-peer-track { position: relative; height: 16px; background: var(--gc-panel-2); border-radius: 999px; margin-top: 2px; }
+    .gc-embedded .gc-peer-dot { position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--gc-muted); transform: translate(-50%, -50%); opacity: 0.7; }
+    .gc-embedded .gc-peer-you { background: var(--gc-brass); width: 7px; height: 7px; opacity: 1; z-index: 2; }
+    .gc-embedded .gc-peer-you span { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 6px; color: var(--gc-brass); white-space: nowrap; }
+    .gc-embedded .gc-tip-card { display: flex; gap: 6px; padding: 6px 8px; margin-bottom: 6px; color: var(--gc-muted); background: var(--gc-panel); border: 1px solid rgba(242,239,233,0.08); border-radius: 8px; font-size: 10px; }
+    .gc-embedded .gc-tip-text { color: var(--gc-fog); font-size: 10px; line-height: 1.3; }
+    .gc-embedded .gc-tip-source { font-size: 8px; font-style: italic; margin-top: 2px; color: var(--gc-muted); }
+    .gc-embedded .gc-share-block { margin: 8px 0; }
+    .gc-embedded .gc-share-row { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+    .gc-embedded .gc-share-active-yes { border-color: var(--gc-teal); color: var(--gc-teal); }
+    .gc-embedded .gc-share-active-no { border-color: var(--gc-rust); color: var(--gc-rust); }
+    .gc-embedded .gc-share-note { font-size: 9px; color: var(--gc-rust); background: rgba(226,114,91,0.08); border: 1px solid rgba(226,114,91,0.25); border-radius: 4px; padding: 4px 8px; margin-bottom: 6px; }
+    .gc-embedded .gc-score-panel { text-align: center; padding: 12px 8px; margin-bottom: 8px; background: var(--gc-panel); border: 1px solid rgba(242,239,233,0.08); border-radius: 8px; }
+    .gc-embedded .gc-score-big { font-size: 28px; color: var(--gc-brass); line-height: 1; font-family: 'Space Grotesk', sans-serif; }
+    .gc-embedded .gc-score-caption { font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gc-muted); margin-top: 2px; }
+    .gc-embedded .gc-score-tier { font-size: 10px; color: var(--gc-fog); margin: 4px 0 0; }
+    .gc-embedded .gc-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; }
+    .gc-embedded .gc-statcard { padding: 6px 4px; text-align: center; background: var(--gc-panel); border: 1px solid rgba(242,239,233,0.08); border-radius: 8px; }
+    .gc-embedded .gc-statcard-value { font-size: 14px; color: var(--gc-fog); font-family: 'IBM Plex Mono', monospace; }
+    .gc-embedded .gc-statcard-label { font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gc-muted); margin-top: 1px; }
+    .gc-embedded .gc-muted-text { font-size: 9px; color: var(--gc-muted); line-height: 1.3; }
+    .gc-embedded .gc-reflex-list { margin: 4px 0 0; padding-left: 12px; font-size: 9px; line-height: 1.4; color: var(--gc-fog); }
+    .gc-embedded .gc-chart-wrap { margin-top: 2px; height: 120px; }
+    .gc-embedded .gc-table-wrap { max-height: 100px; overflow-y: auto; margin-top: 2px; }
+    .gc-embedded .gc-table { width: 100%; border-collapse: collapse; font-size: 8px; }
+    .gc-embedded .gc-table th { text-align: left; padding: 2px 3px; color: var(--gc-muted); text-transform: uppercase; font-size: 6px; letter-spacing: 0.05em; border-bottom: 1px solid rgba(242,239,233,0.12); position: sticky; top: 0; background: var(--gc-panel); }
+    .gc-embedded .gc-table td { padding: 2px 3px; border-bottom: 1px solid rgba(242,239,233,0.06); color: var(--gc-fog); }
+    .gc-embedded .gc-fade-in { opacity: 1; }
+    .gc-embedded .gc-warn { margin-top: 4px; font-size: 9px; color: var(--gc-rust); }
+    .gc-embedded .gc-details { margin-top: 8px; font-size: 9px; color: var(--gc-muted); }
+    .gc-embedded .gc-details summary { cursor: pointer; color: var(--gc-fog); }
+    .gc-embedded .gc-details ul { margin: 4px 0 0; padding-left: 12px; line-height: 1.3; }
+    .gc-embedded .gc-link-btn { background: none; border: none; color: var(--gc-brass); font-size: 8px; cursor: pointer; padding: 0; }
+    .gc-embedded .gc-link-btn:hover { text-decoration: underline; }
+    .gc-embedded .gc-mono { font-family: 'IBM Plex Mono', monospace; }
+    .gc-embedded .gc-display { font-family: 'Space Grotesk', sans-serif; }
+    @media (prefers-reduced-motion: no-preference) {
+      .gc-embedded .gc-fade-in { animation: gcFadeUp 0.25s ease both; }
+    }
+    @keyframes gcFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 760px) { .chat-content { grid-template-columns: 1fr; } .chat-panel { border-right: none; border-bottom: 1px solid #374151; } }
+    @media (max-width: 1024px) { .app-layout { flex-direction: column; } }
   </style>
 </head>
 <body>
@@ -108,28 +253,25 @@
         </form>
       </div>
       <aside class="sidebar-chat">
-        <h2>Online now</h2>
-        <ul id="users"></ul>
-        <div class="status" id="status">Connecting...</div>
+        <!-- Online users (small, scrollable) -->
+        <div>
+          <h2>Online now</h2>
+          <ul id="users"></ul>
+          <div class="status" id="status">Connecting...</div>
+        </div>
+        
+        <hr class="sidebar-divider" />
+        
+        <!-- GUT CHECK EMBEDDED -->
+        <div class="gut-check-embedded">
+          <div id="gutCheckMount"></div>
+        </div>
       </aside>
     </div>
   </div>
-
-  <!-- GUT CHECK SIDEBAR -->
-  <div class="gut-sidebar">
-    <div id="gutCheckMount"></div>
-  </div>
 </div>
 
-<!-- REACT + recharts CDN -->
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/recharts.min.js"></script>
-
-<!-- GUT CHECK JAVASCRIPT (your gut-check-prototype.jsx converted to JS with React) -->
-<script src="gut-check.js"></script>
-
-<!-- CHAT SCRIPT -->
+<!-- ====== CHAT SCRIPT ====== -->
 <script>
   const messageBox = document.getElementById('messages');
   const userList = document.getElementById('users');
@@ -149,6 +291,20 @@
     return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  // Global function to send chat messages from Gut Check
+  window.sendChatMessage = function(text, isGutCheck = true) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.warn('Socket not open, cannot send message');
+      return;
+    }
+    const message = {
+      type: 'message',
+      text: text,
+      isGutCheck: isGutCheck
+    };
+    socket.send(JSON.stringify(message));
+  };
+
   function renderMessage(message) {
     const row = document.createElement('div');
     row.className = 'message';
@@ -157,6 +313,10 @@
       row.innerHTML = `<div>${escapeHtml(message.text)}</div>`;
     } else {
       const time = new Date(message.ts || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const isGutCheck = message.isGutCheck || false;
+      if (isGutCheck) {
+        row.classList.add('gut-check-notice');
+      }
       row.innerHTML = `<div><strong>${escapeHtml(message.username)}</strong><span class="time">${time}</span></div><div>${escapeHtml(message.text)}</div>`;
     }
     messageBox.appendChild(row);
@@ -202,9 +362,364 @@
     event.preventDefault();
     const text = input.value.trim();
     if (!text) return;
-    socket.send(JSON.stringify({ type: 'message', text }));
+    socket.send(JSON.stringify({ type: 'message', text, isGutCheck: false }));
     input.value = '';
   });
+</script>
+
+<!-- ====== GUT CHECK REACT APP ====== -->
+<script>
+  (function() {
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+      document.getElementById('gutCheckMount').innerHTML = '<div style="color: #E2725B; padding: 10px; text-align: center; font-size: 12px;">Error: React not loaded.</div>';
+      return;
+    }
+
+    const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = recharts;
+
+    const CATEGORIES = [
+      "Local News", "Science & Health", "Business", "Entertainment",
+      "Politics", "AI & Synthetic Media"
+    ];
+
+    const ITEMS = [
+      { id: "ln1", category: "Local News", content: "City council approves funding for three new crosswalks near the elementary school district.", isTrue: true, isAIGenerated: false, tip: "Procedural council items are easy to verify — check the public meeting minutes, not just a summary post.", source: "Sample source: city council meeting minutes archive." },
+      { id: "ln2", category: "Local News", content: "A local grocery chain announces it will start paying customers to shop during off-peak hours.", isTrue: false, isAIGenerated: false, tip: "Unusually generous 'policies' with no link to an official announcement are a common hoax shape — check the company's own newsroom page.", source: "Sample source: no matching press release found." },
+      { id: "ln3", category: "Local News", content: "A viral clip appears to show flooding overtaking a downtown intersection during last week's storm.", isTrue: true, isAIGenerated: true, tip: "The flooding was real, but this specific clip was synthetic. Reverse-search a still frame to find the original footage.", source: "Sample source: matched against verified weather-service footage." },
+      { id: "sh1", category: "Science & Health", content: "A regional hospital reports a new scheduling system cut average ER wait times by 12 minutes.", isTrue: true, isAIGenerated: false, tip: "Specific, modest numbers from a named institution are a good sign — check if the hospital published the data itself.", source: "Sample source: hospital system quarterly report." },
+      { id: "sh2", category: "Science & Health", content: "A new study claims drinking cold water before bed burns as many calories as a 20-minute walk.", isTrue: false, isAIGenerated: false, tip: "Big claimed results from a tiny daily habit are a classic red flag — look for the actual study, not just the headline.", source: "Sample source: no peer-reviewed study located." },
+      { id: "sh3", category: "Science & Health", content: "A clip shows a well-known doctor recommending a specific supplement brand on a morning show.", isTrue: false, isAIGenerated: true, tip: "Impersonation clips rarely appear anywhere else — check the person's own verified channels before trusting a single clip.", source: "Sample source: not found on the doctor's official accounts." },
+      { id: "bz1", category: "Business", content: "A mid-size furniture company shifts part of its shipping to rail instead of trucking, citing cost savings.", isTrue: true, isAIGenerated: false, tip: "Specific operational detail like this is easier to verify — check trade-press coverage, not just a social post.", source: "Sample source: trade publication coverage." },
+      { id: "bz2", category: "Business", content: "A popular coffee chain quietly removes all plastic straws worldwide overnight without any announcement.", isTrue: false, isAIGenerated: false, tip: "Global operational change 'overnight' with zero official statement almost never happens — check the company's own newsroom.", source: "Sample source: no newsroom entry found." },
+      { id: "bz3", category: "Business", content: "A leaked memo allegedly shows a tech company planning to charge for a feature that's currently free.", isTrue: false, isAIGenerated: true, tip: "Leaked documents that circulate without letterhead or metadata are worth extra scrutiny — check if any outlet verified the file itself.", source: "Sample source: no outlet verified the document." },
+      { id: "en1", category: "Entertainment", content: "An indie film with a tiny budget quietly becomes one of the most-streamed titles of the month.", isTrue: true, isAIGenerated: false, tip: "Streaming rankings are usually checkable against the platform's own published charts.", source: "Sample source: platform's public top-titles chart." },
+      { id: "en2", category: "Entertainment", content: "A popular musician announces retirement from live performing, starting next year.", isTrue: false, isAIGenerated: false, tip: "'Announcements' that only exist as screenshots, with no link to the artist's own accounts, are a common hoax format.", source: "Sample source: no matching post on verified accounts." },
+      { id: "en3", category: "Entertainment", content: "A clip shows a celebrity giving an unusually blunt, off-the-cuff interview answer that goes viral.", isTrue: false, isAIGenerated: true, tip: "Unusually 'perfect' viral soundbites are worth reverse-searching — lip-sync artifacts show up most around fast head turns.", source: "Sample source: no original broadcast located." },
+      { id: "pl1", category: "Politics", content: "A city increases its minimum notice period for utility shutoffs from 24 to 72 hours.", isTrue: true, isAIGenerated: false, tip: "Unglamorous procedural changes like this are usually real — and boring is itself a small tell.", source: "Sample source: city ordinance record." },
+      { id: "pl2", category: "Politics", content: "A national politician is reported to have skipped a major vote to attend a personal event.", isTrue: false, isAIGenerated: false, tip: "Single-sourced claims about a public figure's whereabouts are checkable against the actual public voting record.", source: "Sample source: voting record shows attendance." },
+      { id: "pl3", category: "Politics", content: "An audio clip appears to catch an elected official saying something that contradicts their public position.", isTrue: false, isAIGenerated: true, tip: "Audio-only clips are harder to verify by eye — check whether the same audio appears anywhere with matching video, and listen for unnatural pacing.", source: "Sample source: audio does not match any known recording." },
+      { id: "ai1", category: "AI & Synthetic Media", content: "A museum opens an exhibit using AI-generated art alongside human-made pieces, clearly labeled as such.", isTrue: true, isAIGenerated: true, tip: "Openly labeled synthetic content isn't the literacy problem — the problem is synthetic content presented as real.", source: "Sample source: museum exhibit program." },
+      { id: "ai2", category: "AI & Synthetic Media", content: "A post claims a popular photo app now secretly trains its AI on private camera-roll photos by default.", isTrue: false, isAIGenerated: false, tip: "Specific claims about default settings are checkable directly in the app's own privacy policy before resharing.", source: "Sample source: privacy policy contradicts the claim." },
+      { id: "ai3", category: "AI & Synthetic Media", content: "A brand's new ad is fully AI-generated and disclosed as such in the video description.", isTrue: true, isAIGenerated: true, tip: "Disclosure is the whole ballgame here — the same clip without a disclosure line would be a very different situation.", source: "Sample source: disclosure present in video description." }
+    ];
+
+    const ROUND_OPTIONS = [6, 10, 14];
+
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+    function shuffle(arr) { const a = [...arr]; for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function generatePeers(centerBool) { const center = centerBool ? 68 : 32; return Array.from({ length: 5 }, () => clamp(Math.round(center + (Math.random()*50-25)), 0, 100)); }
+    function buildPeerData(deckItems) { return deckItems.map(item => ({ truthPeers: generatePeers(item.isTrue), originPeers: generatePeers(item.isAIGenerated) })); }
+    function brier(confidence0to100, outcomeBool) { const o = outcomeBool ? 1 : 0; const c = confidence0to100 / 100; return (c - o) * (c - o); }
+    function computeRoundPoints(answer, item) {
+      const truthB = brier(answer.truth, item.isTrue);
+      const originB = brier(answer.origin, item.isAIGenerated);
+      const truthPts = Math.round((1 - truthB) * 100);
+      const originPts = Math.round((1 - originB) * 100);
+      const combined = Math.round((truthPts + originPts) / 2);
+      return { truthPts, originPts, combined };
+    }
+    function tierText(score) {
+      if (score >= 80) return "Sharp calibration — your gut and your accuracy are talking to each other.";
+      if (score >= 60) return "Decent instincts, with some overconfidence creeping in.";
+      if (score >= 40) return "Your gut and your accuracy aren't fully in sync yet.";
+      return "Time to slow down before hitting share.";
+    }
+    function calibrationBuckets(deck, answers, axis) {
+      const bins = [
+        { label: "0–33%", min: 0, max: 33 },
+        { label: "34–66%", min: 34, max: 66 },
+        { label: "67–100%", min: 67, max: 100 },
+      ];
+      return bins.map(bin => {
+        const rows = deck.map((item, i) => ({ item, answer: answers[i] })).filter(({ answer }) => {
+          if (!answer) return false;
+          const v = axis === "truth" ? answer.truth : answer.origin;
+          return v >= bin.min && v <= bin.max;
+        });
+        if (rows.length === 0) return { bucket: bin.label, "Stated confidence": null, "Actually true": null, count: 0 };
+        const avgConfidence = Math.round(rows.reduce((s, r) => s + (axis === "truth" ? r.answer.truth : r.answer.origin), 0) / rows.length);
+        const positiveCount = rows.filter(r => axis === "truth" ? r.item.isTrue : r.item.isAIGenerated).length;
+        const actualRate = Math.round((positiveCount / rows.length) * 100);
+        return { bucket: bin.label, "Stated confidence": avgConfidence, "Actually true": actualRate, count: rows.length };
+      }).filter(b => b.count > 0);
+    }
+
+    // Components
+    function DialSlider({ label, value, onChange, leftLabel, rightLabel }) {
+      return React.createElement('div', { className: 'gc-dial' },
+        React.createElement('div', { className: 'gc-dial-title' }, label),
+        React.createElement('div', { className: 'gc-dial-labels' },
+          React.createElement('span', null, leftLabel),
+          React.createElement('span', { className: 'gc-dial-readout gc-mono' }, value + '%'),
+          React.createElement('span', null, rightLabel)
+        ),
+        React.createElement('input', { type: 'range', min: 0, max: 100, value, onChange: e => onChange(Number(e.target.value)), className: 'gc-range' })
+      );
+    }
+
+    function GapBar({ label, value, actual }) {
+      const actualPos = actual ? 100 : 0;
+      const error = Math.abs(value - actualPos);
+      const gapColor = error <= 20 ? '#3FA796' : error <= 50 ? '#D4AF37' : '#E2725B';
+      return React.createElement('div', { className: 'gc-gapbar' },
+        React.createElement('div', { className: 'gc-gapbar-label' }, label),
+        React.createElement('div', { className: 'gc-gapbar-track' },
+          React.createElement('div', { className: 'gc-gapbar-fill', style: { left: Math.min(value, actualPos) + '%', width: Math.max(Math.abs(value - actualPos), 1) + '%', background: gapColor } }),
+          React.createElement('div', { className: 'gc-gapbar-mark gc-gapbar-you', style: { left: value + '%' } }, React.createElement('span', null, 'You: ' + value + '%')),
+          React.createElement('div', { className: 'gc-gapbar-mark gc-gapbar-actual', style: { left: actualPos + '%' } }, React.createElement('span', null, 'Actual'))
+        )
+      );
+    }
+
+    function PeerDots({ peers, you, showYou }) {
+      return React.createElement('div', { className: 'gc-peer-track' },
+        peers.map((p, i) => React.createElement('div', { key: i, className: 'gc-peer-dot', style: { left: p + '%' }, title: 'Peer: ' + p + '%' })),
+        showYou && React.createElement('div', { className: 'gc-peer-dot gc-peer-you', style: { left: you + '%' } }, React.createElement('span', null, 'YOU'))
+      );
+    }
+
+    function StatCard({ label, value, sub }) {
+      return React.createElement('div', { className: 'gc-panel gc-statcard' },
+        React.createElement('div', { className: 'gc-statcard-value gc-mono' }, value),
+        React.createElement('div', { className: 'gc-statcard-label' }, label),
+        sub && React.createElement('div', { className: 'gc-statcard-sub' }, sub)
+      );
+    }
+
+    // Screens
+    function HomeScreen({ selectedCategories, toggleCategory, roundCount, setRoundCount, onStart, availableCount }) {
+      const canStart = selectedCategories.length > 0 && availableCount > 0;
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-brand' },
+          React.createElement('span', { style: { fontSize: 16 } }, '📊'),
+          React.createElement('span', { className: 'gc-display gc-brand-title' }, 'GUT CHECK')
+        ),
+        React.createElement('p', { className: 'gc-lede' }, 'Rate claims on truth & AI-origin. Your calibration score shows if your confidence matches reality.'),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title' }, 'Choose categories'),
+          React.createElement('div', { className: 'gc-chip-row' },
+            CATEGORIES.map(c => React.createElement('button', { key: c, className: `gc-chip ${selectedCategories.includes(c) ? 'active' : ''}`, onClick: () => toggleCategory(c) }, c))
+          )
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title' }, 'Session length'),
+          React.createElement('div', { className: 'gc-chip-row' },
+            ROUND_OPTIONS.map(n => React.createElement('button', { key: n, className: `gc-chip ${roundCount === n ? 'active' : ''}`, onClick: () => setRoundCount(n) }, n + ' rounds'))
+          ),
+          !canStart && React.createElement('div', { className: 'gc-warn' }, selectedCategories.length === 0 ? 'Select at least one category.' : 'No items available.')
+        ),
+        React.createElement('button', { className: 'gc-btn gc-btn-primary gc-start-btn', disabled: !canStart, onClick: onStart }, 'Start session →')
+      );
+    }
+
+    function RoundScreen({ item, index, total, currentAnswer, setCurrentAnswer, onSubmit, avgSoFar }) {
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-topbar' },
+          React.createElement('span', { className: 'gc-mono gc-eyebrow' }, 'Round ' + (index+1) + '/' + total),
+          avgSoFar !== null && React.createElement('span', { className: 'gc-mono gc-eyebrow gc-topbar-score' }, 'Avg: ' + avgSoFar)
+        ),
+        React.createElement('div', { className: 'gc-tag gc-cat-tag' }, item.category),
+        React.createElement('div', { className: 'gc-panel gc-content-card' }, React.createElement('p', null, item.content)),
+        React.createElement(DialSlider, { label: 'How true is this?', value: currentAnswer.truth, onChange: v => setCurrentAnswer({ ...currentAnswer, truth: v }), leftLabel: 'False', rightLabel: 'True' }),
+        React.createElement(DialSlider, { label: 'Is this AI-generated?', value: currentAnswer.origin, onChange: v => setCurrentAnswer({ ...currentAnswer, origin: v }), leftLabel: 'Authentic', rightLabel: 'AI' }),
+        React.createElement('div', { className: 'gc-share-block' },
+          React.createElement('div', { className: 'gc-dial-title' }, 'Would you share this?'),
+          React.createElement('div', { className: 'gc-share-row' },
+            React.createElement('button', { className: `gc-btn gc-btn-ghost ${currentAnswer.share === true ? 'gc-share-active-yes' : ''}`, onClick: () => setCurrentAnswer({ ...currentAnswer, share: true }) }, '✅ Yes'),
+            React.createElement('button', { className: `gc-btn gc-btn-ghost ${currentAnswer.share === false ? 'gc-share-active-no' : ''}`, onClick: () => setCurrentAnswer({ ...currentAnswer, share: false }) }, '❌ No')
+          )
+        ),
+        React.createElement('button', { className: 'gc-btn gc-btn-primary gc-start-btn', disabled: currentAnswer.share === null, onClick: onSubmit }, 'Submit →')
+      );
+    }
+
+    function RevealScreen({ item, answer, peers, isLast, onContinue, showMyMark, setShowMyMark }) {
+      const shareNote = (() => {
+        if (answer.share !== true) return null;
+        const uncertain = answer.truth >= 35 && answer.truth <= 65;
+        const confidentlyWrong = (answer.truth >= 70 && !item.isTrue) || (answer.truth <= 30 && item.isTrue);
+        if (confidentlyWrong) return "You were confident and wrong — and you'd still share it.";
+        if (uncertain) return `You'd share this while only ${answer.truth}% sure. Reflex share.`;
+        return null;
+      })();
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-reveal-tags' },
+          React.createElement('span', { className: `gc-tag ${item.isTrue ? 'gc-tag-true' : 'gc-tag-false'}` }, item.isTrue ? '✅ True' : '❌ False'),
+          React.createElement('span', { className: `gc-tag ${item.isAIGenerated ? 'gc-tag-false' : 'gc-tag-true'}` }, '✨ ' + (item.isAIGenerated ? 'AI' : 'Authentic'))
+        ),
+        React.createElement('div', { className: 'gc-panel gc-content-card gc-content-card-small' }, React.createElement('p', null, item.content)),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-points-row' },
+            React.createElement('div', null, React.createElement('div', { className: 'gc-points-label' }, 'Truth'), React.createElement('div', { className: 'gc-mono gc-points-value' }, '+' + answer.points.truthPts)),
+            React.createElement('div', null, React.createElement('div', { className: 'gc-points-label' }, 'Origin'), React.createElement('div', { className: 'gc-mono gc-points-value' }, '+' + answer.points.originPts)),
+            React.createElement('div', null, React.createElement('div', { className: 'gc-points-label' }, 'Total'), React.createElement('div', { className: 'gc-mono gc-points-value gc-points-value-total' }, '+' + answer.points.combined))
+          ),
+          React.createElement(GapBar, { label: 'Truth', value: answer.truth, actual: item.isTrue }),
+          React.createElement(GapBar, { label: 'Origin', value: answer.origin, actual: item.isAIGenerated })
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title-row' },
+            React.createElement('span', { className: 'gc-section-title' }, 'Group distribution'),
+            React.createElement('button', { className: 'gc-link-btn', onClick: () => setShowMyMark(!showMyMark) }, showMyMark ? 'Hide' : 'Show my mark')
+          ),
+          React.createElement(PeerDots, { peers: peers.truthPeers, you: answer.truth, showYou: showMyMark })
+        ),
+        React.createElement('div', { className: 'gc-tip-card' },
+          React.createElement('span', { style: { color: '#D4AF37' } }, '💡'),
+          React.createElement('div', null,
+            React.createElement('div', { className: 'gc-tip-text' }, item.tip),
+            React.createElement('div', { className: 'gc-tip-source' }, item.source)
+          )
+        ),
+        shareNote && React.createElement('div', { className: 'gc-share-note' }, shareNote),
+        React.createElement('button', { className: 'gc-btn gc-btn-primary gc-start-btn', onClick: onContinue }, isLast ? 'See Results →' : 'Next →')
+      );
+    }
+
+    function SummaryScreen({ deck, answers, onRestart, onFinish }) {
+      const [axis, setAxis] = React.useState('truth');
+      const overallScore = Math.round(answers.reduce((s, a) => s + a.points.combined, 0) / answers.length);
+      const truthAvg = Math.round(answers.reduce((s, a) => s + a.points.truthPts, 0) / answers.length);
+      const originAvg = Math.round(answers.reduce((s, a) => s + a.points.originPts, 0) / answers.length);
+      const shareRows = deck.map((item, i) => ({ item, answer: answers[i] })).filter(r => r.answer.share === true);
+      const totalShares = shareRows.length;
+      const uncertainShares = shareRows.filter(r => r.answer.truth >= 35 && r.answer.truth <= 65).length;
+      const confidentWrongShares = shareRows.filter(r => (r.answer.truth >= 70 && !r.item.isTrue) || (r.answer.truth <= 30 && r.item.isTrue)).length;
+      const chartData = React.useMemo(() => calibrationBuckets(deck, answers, axis), [deck, answers, axis]);
+
+      // Send finish notification to chat
+      React.useEffect(() => {
+        if (window.sendChatMessage) {
+          const scoreText = overallScore >= 80 ? '🎯 Excellent calibration!' : 
+                           overallScore >= 60 ? '👍 Good instincts!' : 
+                           overallScore >= 40 ? '📊 Room for improvement.' : 
+                           '🤔 Time to slow down.';
+          window.sendChatMessage(`🧠 Finished Gut Check! Score: ${overallScore}/100. ${scoreText} (${deck.length} rounds)`, true);
+        }
+      }, []);
+
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-eyebrow gc-mono' }, 'COMPLETE'),
+        React.createElement('div', { className: 'gc-panel gc-score-panel' },
+          React.createElement('div', { className: 'gc-mono gc-score-big' }, overallScore),
+          React.createElement('div', { className: 'gc-score-caption' }, 'Calibration Score'),
+          React.createElement('p', { className: 'gc-score-tier' }, tierText(overallScore))
+        ),
+        React.createElement('div', { className: 'gc-stat-grid' },
+          React.createElement(StatCard, { label: 'Truth avg', value: truthAvg }),
+          React.createElement(StatCard, { label: 'Origin avg', value: originAvg }),
+          React.createElement(StatCard, { label: 'Rounds', value: deck.length })
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title' }, 'Sharing reflex'),
+          React.createElement('p', { className: 'gc-muted-text' }, 'Would share ' + totalShares + '/' + deck.length + ' items.'),
+          React.createElement('ul', { className: 'gc-reflex-list' },
+            React.createElement('li', null, React.createElement('strong', null, uncertainShares), ' shared near 50/50 (reflex)'),
+            React.createElement('li', null, React.createElement('strong', null, confidentWrongShares), ' shared while confidently wrong')
+          )
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title-row' },
+            React.createElement('span', { className: 'gc-section-title' }, 'Calibration'),
+            React.createElement('div', { className: 'gc-chip-row' },
+              React.createElement('button', { className: `gc-chip ${axis === 'truth' ? 'active' : ''}`, onClick: () => setAxis('truth') }, 'Truth'),
+              React.createElement('button', { className: `gc-chip ${axis === 'origin' ? 'active' : ''}`, onClick: () => setAxis('origin') }, 'Origin')
+            )
+          ),
+          chartData.length === 0 ? React.createElement('p', { className: 'gc-muted-text' }, 'Not enough data.') :
+            React.createElement('div', { className: 'gc-chart-wrap' },
+              React.createElement(ResponsiveContainer, { width: '100%', height: 120 },
+                React.createElement(BarChart, { data: chartData, margin: { top: 4, right: 4, left: -8, bottom: 0 } },
+                  React.createElement(CartesianGrid, { strokeDasharray: '3 3', stroke: 'rgba(242,239,233,0.06)' }),
+                  React.createElement(XAxis, { dataKey: 'bucket', stroke: '#8B96A3', fontSize: 8 }),
+                  React.createElement(YAxis, { stroke: '#8B96A3', fontSize: 8, domain: [0, 100] }),
+                  React.createElement(Tooltip, { contentStyle: { background: '#1B2127', border: '1px solid rgba(242,239,233,0.15)', borderRadius: 4, color: '#F2EFE9', fontSize: 10 } }),
+                  React.createElement(Bar, { dataKey: 'Stated confidence', fill: '#D4AF37', radius: [2,2,0,0] }),
+                  React.createElement(Bar, { dataKey: 'Actually true', fill: '#3FA796', radius: [2,2,0,0] })
+                )
+              )
+            )
+        ),
+        React.createElement('button', { className: 'gc-btn gc-btn-primary gc-start-btn', onClick: onRestart }, '🔄 New Session')
+      );
+    }
+
+    // Root App
+    function GutCheckApp() {
+      const [screen, setScreen] = React.useState('home');
+      const [selectedCategories, setSelectedCategories] = React.useState([...CATEGORIES]);
+      const [roundCount, setRoundCount] = React.useState(6);
+      const [deck, setDeck] = React.useState([]);
+      const [peerData, setPeerData] = React.useState([]);
+      const [answers, setAnswers] = React.useState([]);
+      const [currentIndex, setCurrentIndex] = React.useState(0);
+      const [currentAnswer, setCurrentAnswer] = React.useState({ truth: 50, origin: 50, share: null });
+      const [showMyMark, setShowMyMark] = React.useState(false);
+
+      const availableCount = React.useMemo(() => ITEMS.filter(it => selectedCategories.includes(it.category)).length, [selectedCategories]);
+
+      function toggleCategory(c) { setSelectedCategories(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]); }
+      function handleStart() {
+        const available = ITEMS.filter(it => selectedCategories.includes(it.category));
+        const size = Math.min(roundCount, available.length);
+        const chosen = shuffle(available).slice(0, size);
+        setDeck(chosen);
+        setPeerData(buildPeerData(chosen));
+        setAnswers(Array(chosen.length).fill(null));
+        setCurrentIndex(0);
+        setCurrentAnswer({ truth: 50, origin: 50, share: null });
+        setShowMyMark(false);
+        setScreen('round');
+        // Send start notification to chat
+        if (window.sendChatMessage) {
+          window.sendChatMessage(`🧠 Started Gut Check session: ${chosen.length} rounds on ${selectedCategories.join(', ')}`, true);
+        }
+      }
+      function handleSubmitRound() {
+        if (currentAnswer.share === null) return;
+        const item = deck[currentIndex];
+        const points = computeRoundPoints(currentAnswer, item);
+        const newAnswers = [...answers];
+        newAnswers[currentIndex] = { ...currentAnswer, points };
+        setAnswers(newAnswers);
+        setShowMyMark(false);
+        setScreen('reveal');
+      }
+      function handleContinue() {
+        if (currentIndex + 1 < deck.length) {
+          setCurrentIndex(currentIndex + 1);
+          setCurrentAnswer({ truth: 50, origin: 50, share: null });
+          setShowMyMark(false);
+          setScreen('round');
+        } else {
+          setScreen('summary');
+        }
+      }
+      function handleRestart() { 
+        setScreen('home'); 
+        setDeck([]); 
+        setAnswers([]); 
+        setCurrentIndex(0);
+      }
+
+      const answeredSoFar = answers.filter(Boolean);
+      const avgSoFar = screen === 'round' && answeredSoFar.length > 0 ? Math.round(answeredSoFar.reduce((s, a) => s + a.points.combined, 0) / answeredSoFar.length) : null;
+
+      return React.createElement('div', { className: 'gc-embedded' },
+        screen === 'home' && React.createElement(HomeScreen, { selectedCategories, toggleCategory, roundCount, setRoundCount, onStart: handleStart, availableCount }),
+        screen === 'round' && React.createElement(RoundScreen, { item: deck[currentIndex], index: currentIndex, total: deck.length, currentAnswer, setCurrentAnswer, onSubmit: handleSubmitRound, avgSoFar }),
+        screen === 'reveal' && React.createElement(RevealScreen, { item: deck[currentIndex], answer: answers[currentIndex], peers: peerData[currentIndex], isLast: currentIndex + 1 >= deck.length, onContinue: handleContinue, showMyMark, setShowMyMark }),
+        screen === 'summary' && React.createElement(SummaryScreen, { deck, answers, onRestart: handleRestart })
+      );
+    }
+
+    // Mount
+    const mountEl = document.getElementById('gutCheckMount');
+    if (mountEl) {
+      const root = ReactDOM.createRoot(mountEl);
+      root.render(React.createElement(GutCheckApp));
+    }
+  })();
 </script>
 
 </body>
