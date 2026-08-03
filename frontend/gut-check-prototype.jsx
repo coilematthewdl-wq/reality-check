@@ -329,7 +329,6 @@ function DialSlider({ label, value, onChange, leftLabel, rightLabel }) {
         onChange={(e) => onChange(Number(e.target.value))}
         className="gc-range"
         aria-label={label}
-        aria-valuetext={`${value}%`}
       />
     </div>
   );
@@ -337,15 +336,9 @@ function DialSlider({ label, value, onChange, leftLabel, rightLabel }) {
 
 function GapBar({ label, value, actual }) {
   const actualPos = actual ? 100 : 0;
-  const start = Math.min(value, actualPos);
-  const rawWidth = Math.abs(value - actualPos);
-  
-  // Safe bounded fill width to prevent overflowing track width
-  const safeWidth = Math.min(Math.max(rawWidth, 1), 100 - start);
   const error = Math.abs(value - actualPos);
   const gapColor =
     error <= 20 ? "var(--gc-teal)" : error <= 50 ? "var(--gc-brass)" : "var(--gc-rust)";
-
   return (
     <div className="gc-gapbar">
       <div className="gc-gapbar-label">{label}</div>
@@ -353,8 +346,8 @@ function GapBar({ label, value, actual }) {
         <div
           className="gc-gapbar-fill"
           style={{
-            left: `${start}%`,
-            width: `${safeWidth}%`,
+            left: `${Math.min(value, actualPos)}%`,
+            width: `${Math.max(Math.abs(value - actualPos), 1)}%`,
             background: gapColor,
           }}
         />
@@ -446,17 +439,13 @@ function HomeScreen({
             </button>
           ))}
         </div>
-        {!canStart ? (
+        {!canStart && (
           <div className="gc-warn">
             {selectedCategories.length === 0
               ? "Select at least one category to continue."
               : "No items available for this selection."}
           </div>
-        ) : availableCount < roundCount ? (
-          <div className="gc-warn" style={{ color: "var(--gc-brass)" }}>
-            Note: Only {availableCount} items available matching selected categories.
-          </div>
-        ) : null}
+        )}
       </div>
 
       <button className="gc-btn gc-btn-primary gc-start-btn" disabled={!canStart} onClick={onStart}>
@@ -484,8 +473,6 @@ function RoundScreen({
   onSubmit,
   avgSoFar,
 }) {
-  if (!item) return null;
-
   return (
     <div className="gc-fade-in">
       <div className="gc-topbar">
@@ -549,8 +536,6 @@ function RoundScreen({
 }
 
 function RevealScreen({ item, answer, peers, isLast, onContinue, showMyMark, setShowMyMark }) {
-  if (!item || !answer) return null;
-
   const shareNote = (() => {
     if (answer.share !== true) return null;
     const uncertain = answer.truth >= 35 && answer.truth <= 65;
@@ -584,16 +569,16 @@ function RevealScreen({ item, answer, peers, isLast, onContinue, showMyMark, set
         <div className="gc-points-row">
           <div>
             <div className="gc-points-label">Truth calibration</div>
-            <div className="gc-mono gc-points-value">+{answer.points?.truthPts ?? 0}</div>
+            <div className="gc-mono gc-points-value">+{answer.points.truthPts}</div>
           </div>
           <div>
             <div className="gc-points-label">Origin calibration</div>
-            <div className="gc-mono gc-points-value">+{answer.points?.originPts ?? 0}</div>
+            <div className="gc-mono gc-points-value">+{answer.points.originPts}</div>
           </div>
           <div>
             <div className="gc-points-label">Round total</div>
             <div className="gc-mono gc-points-value gc-points-value-total">
-              +{answer.points?.combined ?? 0}
+              +{answer.points.combined}
             </div>
           </div>
         </div>
@@ -602,17 +587,15 @@ function RevealScreen({ item, answer, peers, isLast, onContinue, showMyMark, set
         <GapBar label="Origin" value={answer.origin} actual={item.isAIGenerated} />
       </div>
 
-      {peers && (
-        <div className="gc-panel gc-section">
-          <div className="gc-section-title-row">
-            <span className="gc-section-title">Group distribution (simulated)</span>
-            <button className="gc-link-btn" onClick={() => setShowMyMark(!showMyMark)}>
-              {showMyMark ? "Hide my mark" : "Show my mark"}
-            </button>
-          </div>
-          <PeerDots peers={peers.truthPeers} you={answer.truth} showYou={showMyMark} />
+      <div className="gc-panel gc-section">
+        <div className="gc-section-title-row">
+          <span className="gc-section-title">Group distribution (simulated)</span>
+          <button className="gc-link-btn" onClick={() => setShowMyMark(!showMyMark)}>
+            {showMyMark ? "Hide my mark" : "Show my mark"}
+          </button>
         </div>
-      )}
+        <PeerDots peers={peers.truthPeers} you={answer.truth} showYou={showMyMark} />
+      </div>
 
       <div className="gc-panel gc-tip-card">
         <Info size={16} />
@@ -634,24 +617,19 @@ function RevealScreen({ item, answer, peers, isLast, onContinue, showMyMark, set
 function SummaryScreen({ deck, answers, onRestart }) {
   const [axis, setAxis] = useState("truth");
 
-  // Filter completed answers safely
-  const validAnswers = useMemo(() => answers.filter(Boolean), [answers]);
-  const totalRounds = validAnswers.length || 1; // Prevent division by zero
-
   const overallScore = Math.round(
-    validAnswers.reduce((s, a) => s + (a.points?.combined ?? 0), 0) / totalRounds
+    answers.reduce((s, a) => s + a.points.combined, 0) / answers.length
   );
   const truthAvg = Math.round(
-    validAnswers.reduce((s, a) => s + (a.points?.truthPts ?? 0), 0) / totalRounds
+    answers.reduce((s, a) => s + a.points.truthPts, 0) / answers.length
   );
   const originAvg = Math.round(
-    validAnswers.reduce((s, a) => s + (a.points?.originPts ?? 0), 0) / totalRounds
+    answers.reduce((s, a) => s + a.points.originPts, 0) / answers.length
   );
 
   const shareRows = deck
     .map((item, i) => ({ item, answer: answers[i] }))
-    .filter((r) => r.answer?.share === true);
-
+    .filter((r) => r.answer.share === true);
   const totalShares = shareRows.length;
   const uncertainShares = shareRows.filter(
     (r) => r.answer.truth >= 35 && r.answer.truth <= 65
@@ -722,7 +700,7 @@ function SummaryScreen({ deck, answers, onRestart }) {
           <p className="gc-muted-text">Not enough data yet — play a few more rounds.</p>
         ) : (
           <div className="gc-chart-wrap">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={240}>
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(242,239,233,0.08)" />
                 <XAxis dataKey="bucket" stroke="#8B96A3" fontSize={11} />
@@ -763,7 +741,6 @@ function SummaryScreen({ deck, answers, onRestart }) {
             <tbody>
               {deck.map((item, i) => {
                 const a = answers[i];
-                if (!a) return null;
                 return (
                   <tr key={item.id}>
                     <td>{i + 1}</td>
@@ -774,7 +751,7 @@ function SummaryScreen({ deck, answers, onRestart }) {
                       {item.isTrue ? "True" : "False"} /{" "}
                       {item.isAIGenerated ? "AI" : "Authentic"}
                     </td>
-                    <td>{a.points?.combined ?? 0}</td>
+                    <td>{a.points.combined}</td>
                     <td>{a.share ? "Yes" : "No"}</td>
                   </tr>
                 );
@@ -864,7 +841,7 @@ export default function GutCheckApp() {
   const answeredSoFar = answers.filter(Boolean);
   const avgSoFar =
     screen === "round" && answeredSoFar.length > 0
-      ? Math.round(answeredSoFar.reduce((s, a) => s + (a.points?.combined ?? 0), 0) / answeredSoFar.length)
+      ? Math.round(answeredSoFar.reduce((s, a) => s + a.points.combined, 0) / answeredSoFar.length)
       : null;
 
   return (
@@ -1013,7 +990,7 @@ export default function GutCheckApp() {
         .gc-chart-caption { margin: 2px 0 12px; }
         .gc-reflex-list { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--gc-fog); }
 
-        .gc-chart-wrap { margin-top: 6px; width: 100%; height: 240px; }
+        .gc-chart-wrap { margin-top: 6px; }
 
         .gc-table-wrap { max-height: 260px; overflow-y: auto; margin-top: 4px; }
         .gc-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -1065,4 +1042,9 @@ export default function GutCheckApp() {
       {screen === "summary" && <SummaryScreen deck={deck} answers={answers} onRestart={handleRestart} />}
     </div>
   );
+  const mountEl = document.getElementById('gutCheckMount');
+if (mountEl) {
+  const root = ReactDOM.createRoot(mountEl);
+  root.render(<GutCheckApp />);
+}
 }

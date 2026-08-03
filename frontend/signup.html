@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reality Check · Sign up</title>
+  <title>Gut Check · Sign up</title>
   <style>
     * {
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
     body {
-      background: #1a1a1a;
+      background: #14181C;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       margin: 0;
       padding: 1rem;
+      color: #F2EFE9;
     }
 
     /* ---------- sign-up card (consistent with login) ---------- */
@@ -141,7 +142,7 @@
 <body>
 
 <div class="signup-card">
-  <div class="logo">🎭 Reality Check</div>
+  <div class="logo">Gut Check</div>
   <div class="subtitle">Create your account · join the vote</div>
 
   <!-- feedback messages -->
@@ -228,7 +229,7 @@
       }
 
       // Save the account locally so the login page can authenticate it.
-      const accounts = JSON.parse(localStorage.getItem('reality-check-accounts') || '[]');
+      const accounts = JSON.parse(localStorage.getItem('gut-check-accounts') || '[]');
       const existingAccount = accounts.find(account => account.username === userVal);
 
       if (existingAccount) {
@@ -238,21 +239,21 @@
       }
 
       accounts.push({ name: nameVal, username: userVal, password: passVal, email: emailVal });
-      localStorage.setItem('reality-check-accounts', JSON.stringify(accounts));
+      localStorage.setItem('gut-check-accounts', JSON.stringify(accounts));
 
       // Remember the signed-up user for the chat experience.
-      localStorage.setItem('reality-check-current-user', JSON.stringify({ name: nameVal, username: userVal }));
+      localStorage.setItem('gut-check-current-user', JSON.stringify({ name: nameVal, username: userVal }));
       localStorage.setItem('reality-chat-username', nameVal);
 
       sessionStorage.setItem('signup_demo', 'true');
       sessionStorage.setItem('signup_username', userVal);
 
-      successMsg.textContent = `✨ Account created for ${nameVal}! You can now log in.`;
+      successMsg.textContent = `Account created for ${nameVal}! You can now log in.`;
       successMsg.style.display = 'block';
 
       const btn = form.querySelector('.signup-btn');
       btn.disabled = true;
-      btn.textContent = '✅ Saved!';
+      btn.textContent = 'Saved!';
       setTimeout(() => {
         window.location.href = 'chatlogin.html';
       }, 300);
