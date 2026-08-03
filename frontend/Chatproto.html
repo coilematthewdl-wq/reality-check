@@ -88,6 +88,21 @@
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       font-weight: 600;
     }
+    .header .user-toggle {
+      border: 1px solid rgba(242, 239, 233, 0.18);
+      background: transparent;
+      color: var(--gc-fog);
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .header .user-toggle:hover {
+      background: rgba(242, 239, 233, 0.06);
+      border-color: rgba(242, 239, 233, 0.28);
+    }
     .chat-content { display: grid; grid-template-columns: 2fr 1fr; min-height: 480px; }
     .chat-panel { display: flex; flex-direction: column; border-right: 1px solid rgba(242, 239, 233, 0.08); }
     #messages { 
@@ -161,11 +176,19 @@
       color: var(--gc-fog);
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
+    .users-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .users-panel.visible {
+      display: flex;
+    }
     #users { 
       list-style: none; 
       padding: 0; 
       margin: 0; 
-      display: flex; 
+      display: flex;
       flex-direction: column; 
       gap: 4px;
       max-height: 120px;
@@ -225,7 +248,10 @@
   <div class="chat-room">
     <div class="header">
       <h1>Chat</h1>
-      <span class="pill" id="presenceCount">0 online</span>
+      <div style="display:flex; align-items:center; gap: 10px;">
+        <button type="button" class="user-toggle" id="userToggle">Show users</button>
+        <span class="pill" id="presenceCount">0 online</span>
+      </div>
     </div>
     <div class="chat-content">
       <div class="chat-panel">
@@ -237,7 +263,7 @@
       </div>
       <aside class="sidebar-chat">
         <!-- Online users -->
-        <div>
+        <div class="users-panel" id="usersPanel">
           <h2>Online now</h2>
           <ul id="users"></ul>
           <div class="status" id="status">Connecting...</div>
@@ -258,8 +284,10 @@
 <script>
   const messageBox = document.getElementById('messages');
   const userList = document.getElementById('users');
+  const usersPanel = document.getElementById('usersPanel');
   const statusEl = document.getElementById('status');
   const presenceCount = document.getElementById('presenceCount');
+  const userToggle = document.getElementById('userToggle');
   const form = document.getElementById('messageForm');
   const input = document.getElementById('messageInput');
 
@@ -316,6 +344,11 @@
     });
     presenceCount.textContent = `${users.length} online`;
   }
+
+  userToggle.addEventListener('click', () => {
+    const isVisible = usersPanel.classList.toggle('visible');
+    userToggle.textContent = isVisible ? 'Hide users' : 'Show users';
+  });
 
   socket.addEventListener('open', () => {
     statusEl.textContent = 'Connected. Joining room...';
