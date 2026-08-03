@@ -3,25 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gut Check Room</title>
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>Reality Check Room</title>
   
-  <!-- React & ReactDOM & Babel for JSX -->
+  <!-- React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/recharts.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+  
+  <!-- Recharts -->
+  <script crossorigin src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
+  
   <style>
-    * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; }
+    /* ===== GLOBAL RESET & GUT CHECK PALETTE ===== */
+    * { 
+      box-sizing: border-box; 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      margin: 0; 
+    }
+    
+    :root {
+      --gc-ink: #14181C;
+      --gc-panel: #1B2127;
+      --gc-panel-2: #222933;
+      --gc-brass: #D4AF37;
+      --gc-teal: #3FA796;
+      --gc-rust: #E2725B;
+      --gc-fog: #F2EFE9;
+      --gc-muted: #8B96A3;
+    }
+    
     body {
       margin: 0;
       min-height: 100vh;
-      background: #14181C;
-      color: #F2EFE9;
+      background: var(--gc-ink);
+      color: var(--gc-fog);
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -35,12 +49,12 @@
       align-items: flex-start;
     }
 
-    /* CHAT ROOM */
+    /* ===== CHAT ROOM - GUT CHECK PALETTE ===== */
     .chat-room {
       flex: 2;
       min-width: 350px;
-      background: #1B2127;
-      border: 1px solid #222933;
+      background: var(--gc-panel);
+      border: 1px solid rgba(242, 239, 233, 0.08);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
@@ -49,42 +63,104 @@
     }
     .header {
       padding: 16px 20px;
-      background: #14181C;
-      border-bottom: 1px solid #222933;
+      background: var(--gc-panel-2);
+      border-bottom: 1px solid rgba(242, 239, 233, 0.08);
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
     }
-    .header h1 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; color: #F2EFE9; }
-    .header .pill { background: #D4AF37; color: #14181C; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+    .header h1 { 
+      margin: 0; 
+      font-size: 18px; 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--gc-fog);
+    }
+    .header .pill { 
+      background: var(--gc-brass); 
+      padding: 6px 12px; 
+      border-radius: 999px; 
+      font-size: 12px; 
+      color: var(--gc-ink);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-weight: 600;
+    }
     .chat-content { display: grid; grid-template-columns: 2fr 1fr; min-height: 480px; }
-    .chat-panel { display: flex; flex-direction: column; border-right: 1px solid #222933; }
-    #messages { flex: 1; padding: 16px; overflow-y: auto; background: #14181C; max-height: 400px; }
-    .message { margin-bottom: 12px; }
-    .message strong { color: #D4AF37; }
-    .message.system { color: #8B96A3; font-style: italic; }
-    .message .time { font-size: 11px; color: #8B96A3; margin-left: 8px; }
+    .chat-panel { display: flex; flex-direction: column; border-right: 1px solid rgba(242, 239, 233, 0.08); }
+    #messages { 
+      flex: 1; 
+      padding: 16px; 
+      overflow-y: auto; 
+      background: var(--gc-ink); 
+      max-height: 400px; 
+    }
+    .message { 
+      margin-bottom: 12px; 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+    }
+    .message strong { color: var(--gc-brass); }
+    .message.system { color: var(--gc-muted); font-style: italic; }
+    .message .time { 
+      font-size: 11px; 
+      color: var(--gc-muted); 
+      margin-left: 8px; 
+    }
     .message.gut-check-notice { 
-      background: rgba(212, 175, 55, 0.12); 
-      border-left: 3px solid #D4AF37; 
+      background: rgba(212, 175, 55, 0.1); 
+      border-left: 3px solid var(--gc-brass); 
       padding: 6px 12px; 
       border-radius: 4px;
-      color: #F2EFE9;
+      color: var(--gc-brass);
     }
-    .composer { display: flex; gap: 10px; padding: 12px; background: #1B2127; }
-    .composer input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #222933; background: #14181C; color: #F2EFE9; }
-    .composer button { padding: 10px 16px; border: none; border-radius: 8px; background: #D4AF37; color: #14181C; cursor: pointer; }
+    .composer { 
+      display: flex; 
+      gap: 10px; 
+      padding: 12px; 
+      background: var(--gc-panel-2); 
+    }
+    .composer input { 
+      flex: 1; 
+      padding: 10px 12px; 
+      border-radius: 8px; 
+      border: 1px solid rgba(242, 239, 233, 0.12); 
+      background: var(--gc-ink); 
+      color: var(--gc-fog);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .composer input::placeholder {
+      color: var(--gc-muted);
+    }
+    .composer button { 
+      padding: 10px 16px; 
+      border: none; 
+      border-radius: 8px; 
+      background: var(--gc-brass); 
+      color: var(--gc-ink); 
+      cursor: pointer;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-weight: 600;
+    }
+    .composer button:hover { 
+      opacity: 0.88; 
+    }
     .sidebar-chat { 
       padding: 16px; 
-      background: #1B2127;
+      background: var(--gc-panel);
       display: flex;
       flex-direction: column;
       gap: 12px;
       overflow-y: auto;
       max-height: 600px;
     }
-    .sidebar-chat h2 { margin: 0 0 8px; font-size: 16px; color: #F2EFE9; }
+    .sidebar-chat h2 { 
+      margin: 0 0 8px; 
+      font-size: 16px; 
+      color: var(--gc-fog);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
     #users { 
       list-style: none; 
       padding: 0; 
@@ -95,151 +171,51 @@
       max-height: 120px;
       overflow-y: auto;
     }
-    #users li { padding: 6px 10px; border-radius: 6px; background: #222933; color: #F2EFE9; font-size: 13px; }
-    .status { font-size: 12px; color: #8B96A3; }
+    #users li { 
+      padding: 6px 10px; 
+      border-radius: 6px; 
+      background: var(--gc-panel-2); 
+      color: var(--gc-fog); 
+      font-size: 13px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .status { 
+      font-size: 12px; 
+      color: var(--gc-muted);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
     .sidebar-divider {
       border: none;
-      border-top: 1px solid #222933;
+      border-top: 1px solid rgba(242, 239, 233, 0.08);
       margin: 8px 0;
     }
 
-    /* GUT CHECK (embedded in sidebar) */
+    /* ===== GUT CHECK EMBEDDED ===== */
     .gut-check-embedded {
       flex: 1;
-      background: #14181C;
+      background: var(--gc-ink);
       border-radius: 12px;
-      padding: 12px;
-      border: 1px solid #222933;
+      padding: 0;
+      border: 1px solid rgba(242, 239, 233, 0.08);
       overflow-y: auto;
-      max-height: 500px;
-      min-height: 300px;
+      max-height: 600px;
+      min-height: 400px;
     }
     .gut-check-embedded::-webkit-scrollbar { width: 4px; }
-    .gut-check-embedded::-webkit-scrollbar-track { background: #1b2127; border-radius: 4px; }
-    .gut-check-embedded::-webkit-scrollbar-thumb { background: #3a4553; border-radius: 4px; }
-    #gutCheckMount { width: 100%; }
+    .gut-check-embedded::-webkit-scrollbar-track { background: var(--gc-panel); border-radius: 4px; }
+    .gut-check-embedded::-webkit-scrollbar-thumb { background: var(--gc-panel-2); border-radius: 4px; }
+    #gutCheckMount { 
+      width: 100%; 
+      height: 100%;
+    }
 
-    /* Gut Check styles (copied from your JSX) */
-    .gc-root {
-      --gc-ink: #14181C;
-      --gc-panel: #1B2127;
-      --gc-panel-2: #222933;
-      --gc-brass: #D4AF37;
-      --gc-teal: #3FA796;
-      --gc-rust: #E2725B;
-      --gc-fog: #F2EFE9;
-      --gc-muted: #8B96A3;
-      background: var(--gc-ink);
-      color: var(--gc-fog);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      padding: 0;
-      border-radius: 12px;
-      max-width: 100%;
-      margin: 0 auto;
+    @media (max-width: 760px) { 
+      .chat-content { grid-template-columns: 1fr; } 
+      .chat-panel { border-right: none; border-bottom: 1px solid rgba(242, 239, 233, 0.08); } 
     }
-    .gc-root *, .gc-root *::before, .gc-root *::after { box-sizing: border-box; }
-    .gc-display { font-family: 'Space Grotesk', 'Arial Narrow', sans-serif; }
-    .gc-mono { font-family: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace; }
-    .gc-brand { display: flex; align-items: center; gap: 8px; color: var(--gc-brass); }
-    .gc-brand-title { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
-    .gc-lede { color: var(--gc-muted); font-size: 12px; line-height: 1.5; margin: 8px 0 14px; }
-    .gc-panel { background: var(--gc-panel); border: 1px solid rgba(242,239,233,0.08); border-radius: 12px; }
-    .gc-section { padding: 12px; margin-bottom: 10px; }
-    .gc-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gc-muted); margin-bottom: 8px; }
-    .gc-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-    .gc-chip {
-      padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(242,239,233,0.18);
-      font-size: 11px; cursor: pointer; color: var(--gc-muted); background: transparent;
-      transition: all 0.15s ease; font-family: 'Inter', sans-serif;
+    @media (max-width: 1024px) { 
+      .app-layout { flex-direction: column; } 
     }
-    .gc-chip:hover { border-color: rgba(242,239,233,0.4); color: var(--gc-fog); }
-    .gc-chip.active { border-color: var(--gc-brass); color: var(--gc-brass); background: rgba(212,175,55,0.08); }
-    .gc-btn {
-      padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 12px;
-      cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px;
-      transition: opacity 0.15s ease; font-family: 'Inter', sans-serif;
-    }
-    .gc-btn-primary { background: var(--gc-brass); color: var(--gc-ink); }
-    .gc-btn-primary[disabled] { opacity: 0.35; cursor: not-allowed; }
-    .gc-btn-primary:hover:not([disabled]) { opacity: 0.88; }
-    .gc-btn-ghost { background: transparent; color: var(--gc-fog); border: 1px solid rgba(242,239,233,0.22); }
-    .gc-start-btn { width: 100%; justify-content: center; margin-top: 4px; }
-    .gc-content-card { padding: 14px; margin-bottom: 12px; }
-    .gc-content-card p { font-size: 14px; line-height: 1.5; margin: 0; }
-    .gc-content-card-small { padding: 10px; margin-bottom: 8px; }
-    .gc-content-card-small p { font-size: 12px; color: var(--gc-muted); }
-    .gc-dial { margin-bottom: 14px; }
-    .gc-dial-title { font-size: 11px; font-weight: 600; margin-bottom: 6px; }
-    .gc-dial-labels { display: flex; justify-content: space-between; align-items: center; font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gc-muted); margin-bottom: 4px; }
-    .gc-dial-readout { color: var(--gc-fog); font-size: 11px; background: var(--gc-panel-2); padding: 2px 8px; border-radius: 999px; }
-    input.gc-range { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px;
-      background: linear-gradient(90deg, var(--gc-rust) 0%, #4A5460 50%, var(--gc-teal) 100%); outline: none; cursor: pointer; }
-    input.gc-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%;
-      background: var(--gc-fog); border: 3px solid var(--gc-brass); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
-    .gc-tag {
-      display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
-      font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em;
-    }
-    .gc-cat-tag { background: rgba(242,239,233,0.06); color: var(--gc-muted); margin-bottom: 8px; }
-    .gc-tag-true { background: rgba(63,167,150,0.15); color: var(--gc-teal); border: 1px solid rgba(63,167,150,0.4); }
-    .gc-tag-false { background: rgba(226,114,91,0.15); color: var(--gc-rust); border: 1px solid rgba(226,114,91,0.4); }
-    .gc-reveal-tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .gc-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .gc-eyebrow { font-size: 10px; letter-spacing: 0.08em; color: var(--gc-muted); }
-    .gc-topbar-score { color: var(--gc-brass); }
-    .gc-points-row { display: flex; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
-    .gc-points-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gc-muted); }
-    .gc-points-value { font-size: 16px; color: var(--gc-fog); }
-    .gc-points-value-total { color: var(--gc-brass); }
-    .gc-gapbar { margin-bottom: 16px; }
-    .gc-gapbar-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gc-muted); }
-    .gc-gapbar-track { position: relative; height: 6px; background: var(--gc-panel-2); border-radius: 999px; margin-top: 16px; }
-    .gc-gapbar-fill { position: absolute; top: 50%; height: 3px; transform: translateY(-50%); border-radius: 2px; opacity: 0.6; }
-    .gc-gapbar-mark { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; border-radius: 50%; }
-    .gc-gapbar-you { background: var(--gc-fog); border: 2px solid var(--gc-brass); z-index: 2; }
-    .gc-gapbar-actual { background: transparent; border: 2px solid var(--gc-teal); }
-    .gc-gapbar-mark span { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 8px; white-space: nowrap; color: var(--gc-muted); }
-    .gc-peer-track { position: relative; height: 24px; background: var(--gc-panel-2); border-radius: 999px; margin-top: 4px; }
-    .gc-peer-dot { position: absolute; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: var(--gc-muted); transform: translate(-50%, -50%); opacity: 0.7; }
-    .gc-peer-you { background: var(--gc-brass); width: 11px; height: 11px; opacity: 1; z-index: 2; }
-    .gc-peer-you span { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 8px; color: var(--gc-brass); }
-    .gc-tip-card { display: flex; gap: 8px; padding: 10px 12px; margin-bottom: 10px; color: var(--gc-muted); }
-    .gc-tip-text { color: var(--gc-fog); font-size: 11px; line-height: 1.4; }
-    .gc-tip-source { font-size: 10px; font-style: italic; margin-top: 4px; color: var(--gc-muted); }
-    .gc-share-block { margin: 12px 0; }
-    .gc-share-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
-    .gc-share-active-yes { border-color: var(--gc-teal); color: var(--gc-teal); }
-    .gc-share-active-no { border-color: var(--gc-rust); color: var(--gc-rust); }
-    .gc-share-note { font-size: 11px; color: var(--gc-rust); background: rgba(226,114,91,0.08); border: 1px solid rgba(226,114,91,0.25); border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; }
-    .gc-score-panel { text-align: center; padding: 16px 12px; margin-bottom: 12px; }
-    .gc-score-big { font-size: 36px; color: var(--gc-brass); line-height: 1; }
-    .gc-score-caption { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gc-muted); margin-top: 4px; }
-    .gc-score-tier { font-size: 11px; color: var(--gc-fog); margin: 8px 0 0; }
-    .gc-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-    .gc-statcard { padding: 10px 6px; text-align: center; }
-    .gc-statcard-value { font-size: 18px; color: var(--gc-fog); }
-    .gc-statcard-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gc-muted); margin-top: 2px; }
-    .gc-muted-text { font-size: 11px; color: var(--gc-muted); line-height: 1.4; }
-    .gc-reflex-list { margin: 6px 0 0; padding-left: 16px; font-size: 11px; line-height: 1.6; color: var(--gc-fog); }
-    .gc-chart-wrap { margin-top: 4px; height: 160px; }
-    .gc-table-wrap { max-height: 140px; overflow-y: auto; margin-top: 4px; }
-    .gc-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-    .gc-table th { text-align: left; padding: 4px 4px; color: var(--gc-muted); text-transform: uppercase; font-size: 8px; letter-spacing: 0.05em; border-bottom: 1px solid rgba(242,239,233,0.12); position: sticky; top: 0; background: var(--gc-panel); }
-    .gc-table td { padding: 4px 4px; border-bottom: 1px solid rgba(242,239,233,0.06); color: var(--gc-fog); }
-    .gc-fade-in { opacity: 1; }
-    .gc-warn { margin-top: 8px; font-size: 11px; color: var(--gc-rust); }
-    .gc-details { margin-top: 12px; font-size: 11px; color: var(--gc-muted); }
-    .gc-details summary { cursor: pointer; color: var(--gc-fog); }
-    .gc-details ul { margin: 6px 0 0; padding-left: 16px; line-height: 1.5; }
-    .gc-link-btn { background: none; border: none; color: var(--gc-brass); font-size: 10px; cursor: pointer; padding: 0; }
-    .gc-link-btn:hover { text-decoration: underline; }
-    @media (prefers-reduced-motion: no-preference) {
-      .gc-fade-in { animation: gcFadeUp 0.3s ease both; }
-    }
-    @keyframes gcFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media (max-width: 760px) { .chat-content { grid-template-columns: 1fr; } .chat-panel { border-right: none; border-bottom: 1px solid #374151; } }
-    @media (max-width: 1024px) { .app-layout { flex-direction: column; } }
   </style>
 </head>
 <body>
@@ -248,7 +224,7 @@
   <!-- CHAT ROOM -->
   <div class="chat-room">
     <div class="header">
-      <h1>Gut Check Room</h1>
+      <h1>Chat</h1>
       <span class="pill" id="presenceCount">0 online</span>
     </div>
     <div class="chat-content">
@@ -298,7 +274,6 @@
     return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  // Global function for Gut Check to send messages
   window.sendChatMessage = function(text, isGutCheck = true) {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       console.warn('Socket not open, cannot send message');
@@ -376,8 +351,941 @@
   });
 </script>
 
-<!-- ====== GUT CHECK - LOAD JSX DIRECTLY (with Babel) ====== -->
-<script type="text/babel" src="gut-check.jsx"></script>
+<!-- ====== FULL GUT CHECK APP ====== -->
+<script>
+  (function() {
+    console.log('Gut Check script starting...');
+    
+    if (typeof React === 'undefined') {
+      console.error('React not loaded!');
+      document.getElementById('gutCheckMount').innerHTML = 
+        '<div style="color: var(--gc-rust); padding: 20px; text-align: center; font-size: 12px;">React not loaded. Check internet connection.</div>';
+      return;
+    }
+    
+    if (typeof ReactDOM === 'undefined') {
+      console.error('ReactDOM not loaded!');
+      document.getElementById('gutCheckMount').innerHTML = 
+        '<div style="color: var(--gc-rust); padding: 20px; text-align: center; font-size: 12px;">ReactDOM not loaded.</div>';
+      return;
+    }
+
+    if (typeof Recharts === 'undefined') {
+      console.warn('Recharts not loaded - charts will be disabled');
+    }
+
+    console.log('React and ReactDOM loaded');
+
+    // ===== DATA =====
+    const CATEGORIES = [
+      "Local News",
+      "Science & Health",
+      "Business",
+      "Entertainment",
+      "Politics",
+      "AI & Synthetic Media",
+    ];
+
+    const ITEMS = [
+      {
+        id: "ln1",
+        category: "Local News",
+        content: "City council approves funding for three new crosswalks near the elementary school district.",
+        isTrue: true,
+        isAIGenerated: false,
+        tip: "Procedural council items are easy to verify — check the public meeting minutes, not just a summary post.",
+        source: "Sample source: city council meeting minutes archive.",
+      },
+      {
+        id: "ln2",
+        category: "Local News",
+        content: "A local grocery chain announces it will start paying customers to shop during off-peak hours.",
+        isTrue: false,
+        isAIGenerated: false,
+        tip: "Unusually generous 'policies' with no link to an official announcement are a common hoax shape — check the company's own newsroom page.",
+        source: "Sample source: no matching press release found.",
+      },
+      {
+        id: "ln3",
+        category: "Local News",
+        content: "A viral clip appears to show flooding overtaking a downtown intersection during last week's storm.",
+        isTrue: true,
+        isAIGenerated: true,
+        tip: "The flooding was real, but this specific clip was synthetic. Reverse-search a still frame to find the original footage.",
+        source: "Sample source: matched against verified weather-service footage.",
+      },
+      {
+        id: "sh1",
+        category: "Science & Health",
+        content: "A regional hospital reports a new scheduling system cut average ER wait times by 12 minutes.",
+        isTrue: true,
+        isAIGenerated: false,
+        tip: "Specific, modest numbers from a named institution are a good sign — check if the hospital published the data itself.",
+        source: "Sample source: hospital system quarterly report.",
+      },
+      {
+        id: "sh2",
+        category: "Science & Health",
+        content: "A new study claims drinking cold water before bed burns as many calories as a 20-minute walk.",
+        isTrue: false,
+        isAIGenerated: false,
+        tip: "Big claimed results from a tiny daily habit are a classic red flag — look for the actual study, not just the headline.",
+        source: "Sample source: no peer-reviewed study located.",
+      },
+      {
+        id: "sh3",
+        category: "Science & Health",
+        content: "A clip shows a well-known doctor recommending a specific supplement brand on a morning show.",
+        isTrue: false,
+        isAIGenerated: true,
+        tip: "Impersonation clips rarely appear anywhere else — check the person's own verified channels before trusting a single clip.",
+        source: "Sample source: not found on the doctor's official accounts.",
+      },
+      {
+        id: "bz1",
+        category: "Business",
+        content: "A mid-size furniture company shifts part of its shipping to rail instead of trucking, citing cost savings.",
+        isTrue: true,
+        isAIGenerated: false,
+        tip: "Specific operational detail like this is easier to verify — check trade-press coverage, not just a social post.",
+        source: "Sample source: trade publication coverage.",
+      },
+      {
+        id: "bz2",
+        category: "Business",
+        content: "A popular coffee chain quietly removes all plastic straws worldwide overnight without any announcement.",
+        isTrue: false,
+        isAIGenerated: false,
+        tip: "Global operational change 'overnight' with zero official statement almost never happens — check the company's own newsroom.",
+        source: "Sample source: no newsroom entry found.",
+      },
+      {
+        id: "bz3",
+        category: "Business",
+        content: "A leaked memo allegedly shows a tech company planning to charge for a feature that's currently free.",
+        isTrue: false,
+        isAIGenerated: true,
+        tip: "Leaked documents that circulate without letterhead or metadata are worth extra scrutiny — check if any outlet verified the file itself.",
+        source: "Sample source: no outlet verified the document.",
+      },
+      {
+        id: "en1",
+        category: "Entertainment",
+        content: "An indie film with a tiny budget quietly becomes one of the most-streamed titles of the month.",
+        isTrue: true,
+        isAIGenerated: false,
+        tip: "Streaming rankings are usually checkable against the platform's own published charts.",
+        source: "Sample source: platform's public top-titles chart.",
+      },
+      {
+        id: "en2",
+        category: "Entertainment",
+        content: "A popular musician announces retirement from live performing, starting next year.",
+        isTrue: false,
+        isAIGenerated: false,
+        tip: "'Announcements' that only exist as screenshots, with no link to the artist's own accounts, are a common hoax format.",
+        source: "Sample source: no matching post on verified accounts.",
+      },
+      {
+        id: "en3",
+        category: "Entertainment",
+        content: "A clip shows a celebrity giving an unusually blunt, off-the-cuff interview answer that goes viral.",
+        isTrue: false,
+        isAIGenerated: true,
+        tip: "Unusually 'perfect' viral soundbites are worth reverse-searching — lip-sync artifacts show up most around fast head turns.",
+        source: "Sample source: no original broadcast located.",
+      },
+      {
+        id: "pl1",
+        category: "Politics",
+        content: "A city increases its minimum notice period for utility shutoffs from 24 to 72 hours.",
+        isTrue: true,
+        isAIGenerated: false,
+        tip: "Unglamorous procedural changes like this are usually real — and boring is itself a small tell.",
+        source: "Sample source: city ordinance record.",
+      },
+      {
+        id: "pl2",
+        category: "Politics",
+        content: "A national politician is reported to have skipped a major vote to attend a personal event.",
+        isTrue: false,
+        isAIGenerated: false,
+        tip: "Single-sourced claims about a public figure's whereabouts are checkable against the actual public voting record.",
+        source: "Sample source: voting record shows attendance.",
+      },
+      {
+        id: "pl3",
+        category: "Politics",
+        content: "An audio clip appears to catch an elected official saying something that contradicts their public position.",
+        isTrue: false,
+        isAIGenerated: true,
+        tip: "Audio-only clips are harder to verify by eye — check whether the same audio appears anywhere with matching video, and listen for unnatural pacing.",
+        source: "Sample source: audio does not match any known recording.",
+      },
+      {
+        id: "ai1",
+        category: "AI & Synthetic Media",
+        content: "A museum opens an exhibit using AI-generated art alongside human-made pieces, clearly labeled as such.",
+        isTrue: true,
+        isAIGenerated: true,
+        tip: "Openly labeled synthetic content isn't the literacy problem — the problem is synthetic content presented as real.",
+        source: "Sample source: museum exhibit program.",
+      },
+      {
+        id: "ai2",
+        category: "AI & Synthetic Media",
+        content: "A post claims a popular photo app now secretly trains its AI on private camera-roll photos by default.",
+        isTrue: false,
+        isAIGenerated: false,
+        tip: "Specific claims about default settings are checkable directly in the app's own privacy policy before resharing.",
+        source: "Sample source: privacy policy contradicts the claim.",
+      },
+      {
+        id: "ai3",
+        category: "AI & Synthetic Media",
+        content: "A brand's new ad is fully AI-generated and disclosed as such in the video description.",
+        isTrue: true,
+        isAIGenerated: true,
+        tip: "Disclosure is the whole ballgame here — the same clip without a disclosure line would be a very different situation.",
+        source: "Sample source: disclosure present in video description.",
+      },
+    ];
+
+    const ROUND_OPTIONS = [6, 10, 14];
+
+    // ===== HELPERS =====
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function generatePeers(centerBool) {
+      const center = centerBool ? 68 : 32;
+      return Array.from({ length: 5 }, () =>
+        clamp(Math.round(center + (Math.random() * 50 - 25)), 0, 100)
+      );
+    }
+
+    function buildPeerData(deckItems) {
+      return deckItems.map((item) => ({
+        truthPeers: generatePeers(item.isTrue),
+        originPeers: generatePeers(item.isAIGenerated),
+      }));
+    }
+
+    function brier(confidence0to100, outcomeBool) {
+      const o = outcomeBool ? 1 : 0;
+      const c = confidence0to100 / 100;
+      return (c - o) * (c - o);
+    }
+
+    function computeRoundPoints(answer, item) {
+      const truthB = brier(answer.truth, item.isTrue);
+      const originB = brier(answer.origin, item.isAIGenerated);
+      const truthPts = Math.round((1 - truthB) * 100);
+      const originPts = Math.round((1 - originB) * 100);
+      const combined = Math.round((truthPts + originPts) / 2);
+      return { truthPts, originPts, combined };
+    }
+
+    function tierText(score) {
+      if (score >= 80) return "Sharp calibration — your gut and your accuracy are talking to each other.";
+      if (score >= 60) return "Decent instincts, with some overconfidence creeping in.";
+      if (score >= 40) return "Your gut and your accuracy aren't fully in sync yet.";
+      return "Time to slow down before hitting share.";
+    }
+
+    function calibrationBuckets(deck, answers, axis) {
+      const bins = [
+        { label: "0–33%", min: 0, max: 33 },
+        { label: "34–66%", min: 34, max: 66 },
+        { label: "67–100%", min: 67, max: 100 },
+      ];
+      return bins
+        .map((bin) => {
+          const rows = deck
+            .map((item, i) => ({ item, answer: answers[i] }))
+            .filter(({ answer }) => {
+              if (!answer) return false;
+              const v = axis === "truth" ? answer.truth : answer.origin;
+              return v >= bin.min && v <= bin.max;
+            });
+          if (rows.length === 0) {
+            return { bucket: bin.label, "Stated confidence": null, "Actually true": null, count: 0 };
+          }
+          const avgConfidence = Math.round(
+            rows.reduce((s, r) => s + (axis === "truth" ? r.answer.truth : r.answer.origin), 0) /
+              rows.length
+          );
+          const positiveCount = rows.filter((r) =>
+            axis === "truth" ? r.item.isTrue : r.item.isAIGenerated
+          ).length;
+          const actualRate = Math.round((positiveCount / rows.length) * 100);
+          return {
+            bucket: bin.label,
+            "Stated confidence": avgConfidence,
+            "Actually true": actualRate,
+            count: rows.length,
+          };
+        })
+        .filter((b) => b.count > 0);
+    }
+
+    // ===== COMPONENTS =====
+    function DialSlider({ label, value, onChange, leftLabel, rightLabel }) {
+      return React.createElement('div', { className: 'gc-dial' },
+        React.createElement('div', { className: 'gc-dial-title' }, label),
+        React.createElement('div', { className: 'gc-dial-labels' },
+          React.createElement('span', null, leftLabel),
+          React.createElement('span', { className: 'gc-dial-readout gc-mono' }, value + '%'),
+          React.createElement('span', null, rightLabel)
+        ),
+        React.createElement('input', {
+          type: 'range',
+          min: 0,
+          max: 100,
+          value: value,
+          onChange: (e) => onChange(Number(e.target.value)),
+          className: 'gc-range',
+          'aria-label': label
+        })
+      );
+    }
+
+    function GapBar({ label, value, actual }) {
+      const actualPos = actual ? 100 : 0;
+      const error = Math.abs(value - actualPos);
+      const gapColor = error <= 20 ? 'var(--gc-teal)' : error <= 50 ? 'var(--gc-brass)' : 'var(--gc-rust)';
+      return React.createElement('div', { className: 'gc-gapbar' },
+        React.createElement('div', { className: 'gc-gapbar-label' }, label),
+        React.createElement('div', { className: 'gc-gapbar-track' },
+          React.createElement('div', {
+            className: 'gc-gapbar-fill',
+            style: {
+              left: Math.min(value, actualPos) + '%',
+              width: Math.max(Math.abs(value - actualPos), 1) + '%',
+              background: gapColor
+            }
+          }),
+          React.createElement('div', { className: 'gc-gapbar-mark gc-gapbar-you', style: { left: value + '%' } },
+            React.createElement('span', null, 'You: ' + value + '%')
+          ),
+          React.createElement('div', { className: 'gc-gapbar-mark gc-gapbar-actual', style: { left: actualPos + '%' } },
+            React.createElement('span', null, 'Actual')
+          )
+        )
+      );
+    }
+
+    function PeerDots({ peers, you, showYou }) {
+      return React.createElement('div', { className: 'gc-peer-track' },
+        peers.map((p, i) =>
+          React.createElement('div', {
+            key: i,
+            className: 'gc-peer-dot',
+            style: { left: p + '%' },
+            title: 'Peer: ' + p + '%'
+          })
+        ),
+        showYou && React.createElement('div', {
+          className: 'gc-peer-dot gc-peer-you',
+          style: { left: you + '%' }
+        }, React.createElement('span', null, 'YOU'))
+      );
+    }
+
+    function StatCard({ label, value, sub }) {
+      return React.createElement('div', { className: 'gc-panel gc-statcard' },
+        React.createElement('div', { className: 'gc-statcard-value gc-mono' }, value),
+        React.createElement('div', { className: 'gc-statcard-label' }, label),
+        sub && React.createElement('div', { className: 'gc-statcard-sub' }, sub)
+      );
+    }
+
+    // ===== SCREENS =====
+    function HomeScreen({ selectedCategories, toggleCategory, roundCount, setRoundCount, onStart, availableCount }) {
+      const canStart = selectedCategories.length > 0 && availableCount > 0;
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-brand' },
+          React.createElement('span', { style: { fontSize: '22px' } }, '▸'),
+          React.createElement('span', { className: 'gc-display gc-brand-title' }, 'GUT CHECK')
+        ),
+        React.createElement('p', { className: 'gc-lede' },
+          'A calibration game for people who share fast. You won\'t just be scored on right or wrong — you\'ll be scored on whether your confidence matched reality.'
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title' }, 'Choose categories'),
+          React.createElement('div', { className: 'gc-chip-row' },
+            CATEGORIES.map((c) =>
+              React.createElement('button', {
+                key: c,
+                className: 'gc-chip ' + (selectedCategories.includes(c) ? 'active' : ''),
+                onClick: () => toggleCategory(c)
+              }, c)
+            )
+          )
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title' }, 'Session length'),
+          React.createElement('div', { className: 'gc-chip-row' },
+            ROUND_OPTIONS.map((n) =>
+              React.createElement('button', {
+                key: n,
+                className: 'gc-chip ' + (roundCount === n ? 'active' : ''),
+                onClick: () => setRoundCount(n)
+              }, n + ' rounds')
+            )
+          ),
+          !canStart && React.createElement('div', { className: 'gc-warn' },
+            selectedCategories.length === 0 ? 'Select at least one category to continue.' : 'No items available for this selection.'
+          )
+        ),
+        React.createElement('button', {
+          className: 'gc-btn gc-btn-primary gc-start-btn',
+          disabled: !canStart,
+          onClick: onStart
+        }, 'Start session →'),
+        React.createElement('details', { className: 'gc-details' },
+          React.createElement('summary', null, "What's real vs. simulated in this prototype"),
+          React.createElement('ul', null,
+            React.createElement('li', null, 'The deck below is illustrative sample content for testing the mechanic — not a verified, cited production deck.'),
+            React.createElement('li', null, 'The "group" distribution on the reveal screen is simulated for a single player, to demo the anonymized-reveal design.'),
+            React.createElement('li', null, 'A production build would need: a real curated and cited content pipeline, live multiplayer sync, and a moderation flow for user-submitted clips.')
+          )
+        )
+      );
+    }
+
+    function RoundScreen({ item, index, total, currentAnswer, setCurrentAnswer, onSubmit, avgSoFar }) {
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-topbar' },
+          React.createElement('span', { className: 'gc-mono gc-eyebrow' }, 'ROUND ' + (index + 1) + ' / ' + total),
+          avgSoFar !== null && React.createElement('span', { className: 'gc-mono gc-eyebrow gc-topbar-score' }, 'Avg so far: ' + avgSoFar)
+        ),
+        React.createElement('div', { className: 'gc-tag gc-cat-tag' }, item.category),
+        React.createElement('div', { className: 'gc-panel gc-content-card' },
+          React.createElement('p', null, item.content)
+        ),
+        React.createElement(DialSlider, {
+          label: 'How true is this?',
+          value: currentAnswer.truth,
+          onChange: (v) => setCurrentAnswer({ ...currentAnswer, truth: v }),
+          leftLabel: 'DEFINITELY FALSE',
+          rightLabel: 'DEFINITELY TRUE'
+        }),
+        React.createElement(DialSlider, {
+          label: 'Is this AI-generated?',
+          value: currentAnswer.origin,
+          onChange: (v) => setCurrentAnswer({ ...currentAnswer, origin: v }),
+          leftLabel: 'LOOKS AUTHENTIC',
+          rightLabel: 'LOOKS AI-GENERATED'
+        }),
+        React.createElement('div', { className: 'gc-share-block' },
+          React.createElement('div', { className: 'gc-dial-title' }, 'Would you share this?'),
+          React.createElement('div', { className: 'gc-share-row' },
+            React.createElement('button', {
+              className: 'gc-btn gc-btn-ghost ' + (currentAnswer.share === true ? 'gc-share-active-yes' : ''),
+              onClick: () => setCurrentAnswer({ ...currentAnswer, share: true })
+            }, 'Yes, I\'d share it'),
+            React.createElement('button', {
+              className: 'gc-btn gc-btn-ghost ' + (currentAnswer.share === false ? 'gc-share-active-no' : ''),
+              onClick: () => setCurrentAnswer({ ...currentAnswer, share: false })
+            }, 'No, I wouldn\'t')
+          )
+        ),
+        React.createElement('button', {
+          className: 'gc-btn gc-btn-primary gc-start-btn',
+          disabled: currentAnswer.share === null,
+          onClick: onSubmit
+        }, 'Lock in answer →')
+      );
+    }
+
+    function RevealScreen({ item, answer, peers, isLast, onContinue, showMyMark, setShowMyMark }) {
+      const shareNote = (() => {
+        if (answer.share !== true) return null;
+        const uncertain = answer.truth >= 35 && answer.truth <= 65;
+        const confidentlyWrong = (answer.truth >= 70 && !item.isTrue) || (answer.truth <= 30 && item.isTrue);
+        if (confidentlyWrong) return 'You were confident about this one, and wrong — and you\'d still have shared it.';
+        if (uncertain) return 'You said you\'d share this while only ' + answer.truth + '% sure. That\'s a reflex share.';
+        return null;
+      })();
+
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-reveal-tags' },
+          React.createElement('span', { className: 'gc-tag ' + (item.isTrue ? 'gc-tag-true' : 'gc-tag-false') },
+            item.isTrue ? 'True' : 'False'
+          ),
+          React.createElement('span', { className: 'gc-tag ' + (item.isAIGenerated ? 'gc-tag-false' : 'gc-tag-true') },
+            item.isAIGenerated ? 'AI-generated' : 'Authentic'
+          )
+        ),
+        React.createElement('div', { className: 'gc-panel gc-content-card gc-content-card-small' },
+          React.createElement('p', null, item.content)
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-points-row' },
+            React.createElement('div', null,
+              React.createElement('div', { className: 'gc-points-label' }, 'Truth calibration'),
+              React.createElement('div', { className: 'gc-mono gc-points-value' }, '+' + answer.points.truthPts)
+            ),
+            React.createElement('div', null,
+              React.createElement('div', { className: 'gc-points-label' }, 'Origin calibration'),
+              React.createElement('div', { className: 'gc-mono gc-points-value' }, '+' + answer.points.originPts)
+            ),
+            React.createElement('div', null,
+              React.createElement('div', { className: 'gc-points-label' }, 'Round total'),
+              React.createElement('div', { className: 'gc-mono gc-points-value gc-points-value-total' }, '+' + answer.points.combined)
+            )
+          ),
+          React.createElement(GapBar, { label: 'Truth', value: answer.truth, actual: item.isTrue }),
+          React.createElement(GapBar, { label: 'Origin', value: answer.origin, actual: item.isAIGenerated })
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title-row' },
+            React.createElement('span', { className: 'gc-section-title' }, 'Group distribution (simulated)'),
+            React.createElement('button', { className: 'gc-link-btn', onClick: () => setShowMyMark(!showMyMark) },
+              showMyMark ? 'Hide my mark' : 'Show my mark'
+            )
+          ),
+          React.createElement(PeerDots, { peers: peers.truthPeers, you: answer.truth, showYou: showMyMark })
+        ),
+        React.createElement('div', { className: 'gc-panel gc-tip-card' },
+          React.createElement('span', { style: { flexShrink: 0, color: 'var(--gc-brass)', marginTop: '2px' } }, 'ℹ'),
+          React.createElement('div', null,
+            React.createElement('div', { className: 'gc-tip-text' }, item.tip),
+            React.createElement('div', { className: 'gc-tip-source' }, item.source)
+          )
+        ),
+        shareNote && React.createElement('div', { className: 'gc-share-note' }, shareNote),
+        React.createElement('button', {
+          className: 'gc-btn gc-btn-primary gc-start-btn',
+          onClick: onContinue
+        }, isLast ? 'See results' : 'Next round', ' →')
+      );
+    }
+
+    function SummaryScreen({ deck, answers, onRestart }) {
+      const [axis, setAxis] = React.useState('truth');
+
+      const overallScore = Math.round(answers.reduce((s, a) => s + a.points.combined, 0) / answers.length);
+      const truthAvg = Math.round(answers.reduce((s, a) => s + a.points.truthPts, 0) / answers.length);
+      const originAvg = Math.round(answers.reduce((s, a) => s + a.points.originPts, 0) / answers.length);
+
+      const shareRows = deck.map((item, i) => ({ item, answer: answers[i] })).filter((r) => r.answer.share === true);
+      const totalShares = shareRows.length;
+      const uncertainShares = shareRows.filter((r) => r.answer.truth >= 35 && r.answer.truth <= 65).length;
+      const confidentWrongShares = shareRows.filter(
+        (r) => (r.answer.truth >= 70 && !r.item.isTrue) || (r.answer.truth <= 30 && r.item.isTrue)
+      ).length;
+
+      const chartData = React.useMemo(() => calibrationBuckets(deck, answers, axis), [deck, answers, axis]);
+
+      return React.createElement('div', { className: 'gc-fade-in' },
+        React.createElement('div', { className: 'gc-eyebrow gc-mono' }, 'SESSION COMPLETE'),
+        React.createElement('div', { className: 'gc-panel gc-score-panel' },
+          React.createElement('div', { className: 'gc-mono gc-score-big' }, overallScore),
+          React.createElement('div', { className: 'gc-score-caption' }, 'Calibration score'),
+          React.createElement('p', { className: 'gc-score-tier' }, tierText(overallScore))
+        ),
+        React.createElement('div', { className: 'gc-stat-grid' },
+          React.createElement(StatCard, { label: 'Truth-axis avg', value: truthAvg }),
+          React.createElement(StatCard, { label: 'Origin-axis avg', value: originAvg }),
+          React.createElement(StatCard, { label: 'Rounds played', value: deck.length })
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title' }, 'Sharing reflex'),
+          React.createElement('p', { className: 'gc-muted-text' },
+            'You said you\'d share ' + totalShares + ' of ' + deck.length + ' items.'
+          ),
+          React.createElement('ul', { className: 'gc-reflex-list' },
+            React.createElement('li', null,
+              React.createElement('strong', null, uncertainShares),
+              ' were shared while sitting near 50/50 — a reflex share, not a confident one.'
+            ),
+            React.createElement('li', null,
+              React.createElement('strong', null, confidentWrongShares),
+              ' were shared while confidently wrong about the content.'
+            )
+          )
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title-row' },
+            React.createElement('span', { className: 'gc-section-title' }, 'Calibration chart'),
+            React.createElement('div', { className: 'gc-chip-row gc-chip-row-tight' },
+              React.createElement('button', {
+                className: 'gc-chip ' + (axis === 'truth' ? 'active' : ''),
+                onClick: () => setAxis('truth')
+              }, 'Truth axis'),
+              React.createElement('button', {
+                className: 'gc-chip ' + (axis === 'origin' ? 'active' : ''),
+                onClick: () => setAxis('origin')
+              }, 'Origin axis')
+            )
+          ),
+          React.createElement('p', { className: 'gc-muted-text gc-chart-caption' },
+            'Bars close together mean your stated confidence matched how often you were actually right in that range.'
+          ),
+          chartData.length === 0 ?
+            React.createElement('p', { className: 'gc-muted-text' }, 'Not enough data yet — play a few more rounds.') :
+            React.createElement('div', { className: 'gc-chart-wrap' },
+              React.createElement(Recharts.ResponsiveContainer, { width: '100%', height: 240 },
+                React.createElement(Recharts.BarChart, { data: chartData, margin: { top: 10, right: 10, left: -10, bottom: 0 } },
+                  React.createElement(Recharts.CartesianGrid, { strokeDasharray: '3 3', stroke: 'rgba(242,239,233,0.08)' }),
+                  React.createElement(Recharts.XAxis, { dataKey: 'bucket', stroke: '#8B96A3', fontSize: 11 }),
+                  React.createElement(Recharts.YAxis, { stroke: '#8B96A3', fontSize: 11, domain: [0, 100] }),
+                  React.createElement(Recharts.Tooltip, {
+                    contentStyle: {
+                      background: '#1B2127',
+                      border: '1px solid rgba(242,239,233,0.15)',
+                      borderRadius: 8,
+                      color: '#F2EFE9',
+                      fontSize: 12
+                    }
+                  }),
+                  React.createElement(Recharts.Legend, { wrapperStyle: { fontSize: 11, color: '#8B96A3' } }),
+                  React.createElement(Recharts.Bar, { dataKey: 'Stated confidence', fill: '#D4AF37', radius: [4, 4, 0, 0] }),
+                  React.createElement(Recharts.Bar, { dataKey: 'Actually true', fill: '#3FA796', radius: [4, 4, 0, 0] })
+                )
+              )
+            )
+        ),
+        React.createElement('div', { className: 'gc-panel gc-section' },
+          React.createElement('div', { className: 'gc-section-title' }, 'Round history'),
+          React.createElement('div', { className: 'gc-table-wrap' },
+            React.createElement('table', { className: 'gc-table' },
+              React.createElement('thead', null,
+                React.createElement('tr', null,
+                  React.createElement('th', null, '#'),
+                  React.createElement('th', null, 'Category'),
+                  React.createElement('th', null, 'Truth'),
+                  React.createElement('th', null, 'Origin'),
+                  React.createElement('th', null, 'Answer'),
+                  React.createElement('th', null, 'Points'),
+                  React.createElement('th', null, 'Shared?')
+                )
+              ),
+              React.createElement('tbody', null,
+                deck.map((item, i) => {
+                  const a = answers[i];
+                  return React.createElement('tr', { key: item.id },
+                    React.createElement('td', null, i + 1),
+                    React.createElement('td', null, item.category),
+                    React.createElement('td', null, a.truth + '%'),
+                    React.createElement('td', null, a.origin + '%'),
+                    React.createElement('td', null, (item.isTrue ? 'True' : 'False') + ' / ' + (item.isAIGenerated ? 'AI' : 'Authentic')),
+                    React.createElement('td', null, a.points.combined),
+                    React.createElement('td', null, a.share ? 'Yes' : 'No')
+                  );
+                })
+              )
+            )
+          )
+        ),
+        React.createElement('button', {
+          className: 'gc-btn gc-btn-primary gc-start-btn',
+          onClick: onRestart
+        }, 'Start a new session')
+      );
+    }
+
+    // ===== ROOT APP =====
+    function GutCheckApp() {
+      const [screen, setScreen] = React.useState('home');
+      const [selectedCategories, setSelectedCategories] = React.useState([...CATEGORIES]);
+      const [roundCount, setRoundCount] = React.useState(10);
+
+      const [deck, setDeck] = React.useState([]);
+      const [peerData, setPeerData] = React.useState([]);
+      const [answers, setAnswers] = React.useState([]);
+      const [currentIndex, setCurrentIndex] = React.useState(0);
+      const [currentAnswer, setCurrentAnswer] = React.useState({ truth: 50, origin: 50, share: null });
+      const [showMyMark, setShowMyMark] = React.useState(false);
+
+      const availableCount = React.useMemo(
+        () => ITEMS.filter((it) => selectedCategories.includes(it.category)).length,
+        [selectedCategories]
+      );
+
+      function toggleCategory(c) {
+        setSelectedCategories((prev) =>
+          prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+        );
+      }
+
+      function handleStart() {
+        const available = ITEMS.filter((it) => selectedCategories.includes(it.category));
+        const size = Math.min(roundCount, available.length);
+        const chosen = shuffle(available).slice(0, size);
+        setDeck(chosen);
+        setPeerData(buildPeerData(chosen));
+        setAnswers(Array(chosen.length).fill(null));
+        setCurrentIndex(0);
+        setCurrentAnswer({ truth: 50, origin: 50, share: null });
+        setShowMyMark(false);
+        setScreen('round');
+        
+        if (window.sendChatMessage) {
+          window.sendChatMessage('Started Gut Check: ' + chosen.length + ' rounds', true);
+        }
+      }
+
+      function handleSubmitRound() {
+        if (currentAnswer.share === null) return;
+        const item = deck[currentIndex];
+        const points = computeRoundPoints(currentAnswer, item);
+        const newAnswers = [...answers];
+        newAnswers[currentIndex] = { ...currentAnswer, points };
+        setAnswers(newAnswers);
+        setShowMyMark(false);
+        setScreen('reveal');
+      }
+
+      function handleContinue() {
+        if (currentIndex + 1 < deck.length) {
+          setCurrentIndex(currentIndex + 1);
+          setCurrentAnswer({ truth: 50, origin: 50, share: null });
+          setShowMyMark(false);
+          setScreen('round');
+        } else {
+          setScreen('summary');
+          if (window.sendChatMessage) {
+            const score = Math.round(answers.reduce((s, a) => s + a.points.combined, 0) / answers.length);
+            window.sendChatMessage('Finished Gut Check! Score: ' + score + '/100', true);
+          }
+        }
+      }
+
+      function handleRestart() {
+        setScreen('home');
+        setDeck([]);
+        setPeerData([]);
+        setAnswers([]);
+        setCurrentIndex(0);
+      }
+
+      const answeredSoFar = answers.filter(Boolean);
+      const avgSoFar = screen === 'round' && answeredSoFar.length > 0
+        ? Math.round(answeredSoFar.reduce((s, a) => s + a.points.combined, 0) / answeredSoFar.length)
+        : null;
+
+      // Add CSS styles for Gut Check
+      React.useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+          .gc-root {
+            --gc-ink: #14181C;
+            --gc-panel: #1B2127;
+            --gc-panel-2: #222933;
+            --gc-brass: #D4AF37;
+            --gc-teal: #3FA796;
+            --gc-rust: #E2725B;
+            --gc-fog: #F2EFE9;
+            --gc-muted: #8B96A3;
+            color: var(--gc-fog);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            max-width: 100%;
+            margin: 0 auto;
+          }
+          .gc-root * { box-sizing: border-box; }
+          .gc-root *:focus-visible { outline: 2px solid var(--gc-brass); outline-offset: 2px; border-radius: 4px; }
+
+          .gc-display { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+          .gc-mono { font-family: 'Inter', ui-monospace, monospace; }
+
+          .gc-brand { display: flex; align-items: center; gap: 8px; color: var(--gc-brass); }
+          .gc-brand-title { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; color: var(--gc-fog); }
+          .gc-lede { color: var(--gc-muted); font-size: 13px; line-height: 1.55; margin: 10px 0 18px; }
+
+          .gc-panel { background: var(--gc-panel); border: 1px solid rgba(242,239,233,0.08); border-radius: 12px; }
+          .gc-section { padding: 14px; margin-bottom: 12px; }
+          .gc-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gc-muted); margin-bottom: 8px; }
+          .gc-section-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+          .gc-section-title-row .gc-section-title { margin-bottom: 0; }
+
+          .gc-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+          .gc-chip-row-tight { gap: 4px; }
+          .gc-chip {
+            padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(242,239,233,0.18);
+            font-size: 11px; cursor: pointer; color: var(--gc-muted); background: transparent;
+            transition: all 0.15s ease; font-family: 'Inter', sans-serif;
+          }
+          .gc-chip:hover { border-color: rgba(242,239,233,0.4); color: var(--gc-fog); }
+          .gc-chip.active { border-color: var(--gc-brass); color: var(--gc-brass); background: rgba(212,175,55,0.08); }
+
+          .gc-warn { margin-top: 8px; font-size: 12px; color: var(--gc-rust); }
+
+          .gc-btn {
+            padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 13px;
+            cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px;
+            transition: opacity 0.15s ease; font-family: 'Inter', sans-serif;
+          }
+          .gc-btn-primary { background: var(--gc-brass); color: var(--gc-ink); }
+          .gc-btn-primary[disabled] { opacity: 0.35; cursor: not-allowed; }
+          .gc-btn-primary:hover:not([disabled]) { opacity: 0.88; }
+          .gc-btn-ghost { background: transparent; color: var(--gc-fog); border: 1px solid rgba(242,239,233,0.22); }
+          .gc-btn-ghost:hover { border-color: rgba(242,239,233,0.5); }
+          .gc-start-btn { width: 100%; justify-content: center; margin-top: 4px; }
+
+          .gc-link-btn { background: none; border: none; color: var(--gc-brass); font-size: 11px; cursor: pointer; padding: 0; }
+          .gc-link-btn:hover { text-decoration: underline; }
+
+          .gc-details { margin-top: 18px; font-size: 12px; color: var(--gc-muted); }
+          .gc-details summary { cursor: pointer; color: var(--gc-fog); }
+          .gc-details ul { margin: 8px 0 0; padding-left: 16px; line-height: 1.6; }
+
+          .gc-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+          .gc-eyebrow { font-size: 10px; letter-spacing: 0.08em; color: var(--gc-muted); }
+          .gc-topbar-score { color: var(--gc-brass); }
+
+          .gc-tag {
+            display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 999px;
+            font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+          }
+          .gc-cat-tag { background: rgba(242,239,233,0.06); color: var(--gc-muted); margin-bottom: 10px; }
+          .gc-tag-true { background: rgba(63,167,150,0.15); color: var(--gc-teal); border: 1px solid rgba(63,167,150,0.4); }
+          .gc-tag-false { background: rgba(226,114,91,0.15); color: var(--gc-rust); border: 1px solid rgba(226,114,91,0.4); }
+          .gc-reveal-tags { display: flex; gap: 6px; margin-bottom: 10px; }
+
+          .gc-content-card { padding: 18px; margin-bottom: 14px; }
+          .gc-content-card p { font-size: 15px; line-height: 1.5; margin: 0; }
+          .gc-content-card-small { padding: 14px; margin-bottom: 12px; }
+          .gc-content-card-small p { font-size: 13px; color: var(--gc-muted); }
+
+          .gc-dial { margin-bottom: 16px; }
+          .gc-dial-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+          .gc-dial-labels { display: flex; justify-content: space-between; align-items: center; font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gc-muted); margin-bottom: 4px; }
+          .gc-dial-readout { color: var(--gc-fog); font-size: 11px; background: var(--gc-panel-2); padding: 2px 8px; border-radius: 999px; }
+
+          input.gc-range { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px;
+            background: linear-gradient(90deg, var(--gc-rust) 0%, #4A5460 50%, var(--gc-teal) 100%); outline: none; cursor: pointer; }
+          input.gc-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: var(--gc-fog); border: 2px solid var(--gc-brass); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+          input.gc-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--gc-fog);
+            border: 2px solid var(--gc-brass); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+          input.gc-range::-moz-range-track { height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--gc-rust) 0%, #4A5460 50%, var(--gc-teal) 100%); }
+
+          .gc-share-block { margin: 16px 0; }
+          .gc-share-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+          .gc-share-active-yes { border-color: var(--gc-teal); color: var(--gc-teal); }
+          .gc-share-active-no { border-color: var(--gc-rust); color: var(--gc-rust); }
+
+          .gc-points-row { display: flex; justify-content: space-between; margin-bottom: 14px; }
+          .gc-points-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gc-muted); margin-bottom: 2px; }
+          .gc-points-value { font-size: 18px; color: var(--gc-fog); }
+          .gc-points-value-total { color: var(--gc-brass); }
+
+          .gc-gapbar { margin-bottom: 20px; }
+          .gc-gapbar:last-child { margin-bottom: 2px; }
+          .gc-gapbar-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gc-muted); }
+          .gc-gapbar-track { position: relative; height: 6px; background: var(--gc-panel-2); border-radius: 999px; margin-top: 18px; }
+          .gc-gapbar-fill { position: absolute; top: 50%; height: 3px; transform: translateY(-50%); border-radius: 2px; opacity: 0.6; }
+          .gc-gapbar-mark { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; border-radius: 50%; }
+          .gc-gapbar-you { background: var(--gc-fog); border: 2px solid var(--gc-brass); z-index: 2; }
+          .gc-gapbar-actual { background: transparent; border: 2px solid var(--gc-teal); }
+          .gc-gapbar-mark span { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 8px; white-space: nowrap; color: var(--gc-muted); }
+
+          .gc-peer-track { position: relative; height: 24px; background: var(--gc-panel-2); border-radius: 999px; margin-top: 2px; }
+          .gc-peer-dot { position: absolute; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: var(--gc-muted); transform: translate(-50%, -50%); opacity: 0.7; }
+          .gc-peer-you { background: var(--gc-brass); width: 12px; height: 12px; opacity: 1; z-index: 2; }
+          .gc-peer-you span { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 8px; color: var(--gc-brass); white-space: nowrap; }
+
+          .gc-tip-card { display: flex; gap: 8px; padding: 12px 14px; margin-bottom: 12px; color: var(--gc-muted); }
+          .gc-tip-text { color: var(--gc-fog); font-size: 12px; line-height: 1.5; }
+          .gc-tip-source { font-size: 10px; font-style: italic; margin-top: 4px; color: var(--gc-muted); }
+
+          .gc-share-note { font-size: 12px; color: var(--gc-rust); background: rgba(226,114,91,0.08); border: 1px solid rgba(226,114,91,0.25); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; }
+
+          .gc-score-panel { text-align: center; padding: 22px 14px; margin-bottom: 14px; }
+          .gc-score-big { font-size: 44px; color: var(--gc-brass); line-height: 1; }
+          .gc-score-caption { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gc-muted); margin-top: 4px; }
+          .gc-score-tier { font-size: 12px; color: var(--gc-fog); margin: 10px 0 0; }
+
+          .gc-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+          .gc-statcard { padding: 12px 8px; text-align: center; }
+          .gc-statcard-value { font-size: 18px; color: var(--gc-fog); }
+          .gc-statcard-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gc-muted); margin-top: 2px; }
+
+          .gc-muted-text { font-size: 12px; color: var(--gc-muted); line-height: 1.5; }
+          .gc-chart-caption { margin: 2px 0 10px; }
+          .gc-reflex-list { margin: 6px 0 0; padding-left: 16px; font-size: 12px; line-height: 1.6; color: var(--gc-fog); }
+
+          .gc-chart-wrap { margin-top: 4px; }
+
+          .gc-table-wrap { max-height: 200px; overflow-y: auto; margin-top: 2px; }
+          .gc-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+          .gc-table th { text-align: left; padding: 6px 4px; color: var(--gc-muted); text-transform: uppercase; font-size: 8px; letter-spacing: 0.05em; border-bottom: 1px solid rgba(242,239,233,0.12); position: sticky; top: 0; background: var(--gc-panel); }
+          .gc-table td { padding: 6px 4px; border-bottom: 1px solid rgba(242,239,233,0.06); color: var(--gc-fog); }
+
+          .gc-fade-in { opacity: 1; }
+          @media (prefers-reduced-motion: no-preference) {
+            .gc-fade-in { animation: gcFadeUp 0.3s ease both; }
+          }
+          @keyframes gcFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        `;
+        document.head.appendChild(style);
+        return () => style.remove();
+      }, []);
+
+      return React.createElement('div', { className: 'gc-root' },
+        screen === 'home' && React.createElement(HomeScreen, {
+          selectedCategories,
+          toggleCategory,
+          roundCount,
+          setRoundCount,
+          onStart: handleStart,
+          availableCount
+        }),
+        screen === 'round' && React.createElement(RoundScreen, {
+          item: deck[currentIndex],
+          index: currentIndex,
+          total: deck.length,
+          currentAnswer,
+          setCurrentAnswer,
+          onSubmit: handleSubmitRound,
+          avgSoFar
+        }),
+        screen === 'reveal' && React.createElement(RevealScreen, {
+          item: deck[currentIndex],
+          answer: answers[currentIndex],
+          peers: peerData[currentIndex],
+          isLast: currentIndex + 1 >= deck.length,
+          onContinue: handleContinue,
+          showMyMark,
+          setShowMyMark
+        }),
+        screen === 'summary' && React.createElement(SummaryScreen, {
+          deck,
+          answers,
+          onRestart: handleRestart
+        })
+      );
+    }
+
+    // ===== MOUNT =====
+    const mountEl = document.getElementById('gutCheckMount');
+    if (mountEl) {
+      try {
+        console.log('Mounting Gut Check...');
+        const root = ReactDOM.createRoot(mountEl);
+        root.render(React.createElement(GutCheckApp));
+        console.log('Gut Check mounted successfully!');
+      } catch (error) {
+        console.error('Error mounting:', error);
+        mountEl.innerHTML = '<div style="color: #E2725B; padding: 20px; text-align: center; font-size: 12px;">Error: ' + error.message + '</div>';
+      }
+    }
+  })();
+</script>
 
 </body>
 </html>
