@@ -139,7 +139,7 @@
 </div>
 
 <script>
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     
     const username = document.getElementById('username').value.trim();
@@ -152,17 +152,25 @@
       errorMsg.style.display = 'block';
       return;
     }
-    
-    const accounts = JSON.parse(localStorage.getItem('gut-check-accounts') || '[]');
-    const account = accounts.find(user => user.username === username && user.password === password);
-    
-    if (account) {
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Invalid username or password');
+      }
+
       errorMsg.style.display = 'none';
-      localStorage.setItem('gut-check-current-user', JSON.stringify({ name: account.name, username: account.username }));
-      localStorage.setItem('reality-chat-username', account.name);
+      localStorage.setItem('gut-check-current-user', JSON.stringify({ name: result.name, username: result.username }));
+      localStorage.setItem('reality-chat-username', result.name);
       window.location.href = 'Chatproto.html';
-    } else {
-      errorMsg.textContent = 'Invalid username or password';
+    } catch (error) {
+      errorMsg.textContent = error.message || 'Invalid username or password';
       errorMsg.style.display = 'block';
     }
   }

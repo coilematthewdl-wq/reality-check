@@ -198,7 +198,7 @@
     }
 
     // ----- handle sign-up -----
-    window.handleSignup = function(e) {
+    window.handleSignup = async function(e) {
       e.preventDefault();
       hideAllMessages();
 
@@ -228,35 +228,34 @@
         return;
       }
 
-      // Save the account locally so the login page can authenticate it.
-      const accounts = JSON.parse(localStorage.getItem('gut-check-accounts') || '[]');
-      const existingAccount = accounts.find(account => account.username === userVal);
+      try {
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: nameVal, username: userVal, password: passVal, email: emailVal })
+        });
+        const result = await response.json();
 
-      if (existingAccount) {
-        errorMsg.textContent = 'That username already exists. Please choose another one.';
+        if (!response.ok) {
+          throw new Error(result.error || 'Signup failed');
+        }
+
+        localStorage.setItem('gut-check-current-user', JSON.stringify({ name: result.name, username: result.username }));
+        localStorage.setItem('reality-chat-username', result.name);
+
+        successMsg.textContent = `Account created for ${result.name}! Redirecting to login...`;
+        successMsg.style.display = 'block';
+
+        const btn = form.querySelector('.signup-btn');
+        btn.disabled = true;
+        btn.textContent = 'Saved!';
+        setTimeout(() => {
+          window.location.href = 'chatlogin.html';
+        }, 300);
+      } catch (error) {
+        errorMsg.textContent = error.message || 'Unable to create account';
         errorMsg.style.display = 'block';
-        return;
       }
-
-      accounts.push({ name: nameVal, username: userVal, password: passVal, email: emailVal });
-      localStorage.setItem('gut-check-accounts', JSON.stringify(accounts));
-
-      // Remember the signed-up user for the chat experience.
-      localStorage.setItem('gut-check-current-user', JSON.stringify({ name: nameVal, username: userVal }));
-      localStorage.setItem('reality-chat-username', nameVal);
-
-      sessionStorage.setItem('signup_demo', 'true');
-      sessionStorage.setItem('signup_username', userVal);
-
-      successMsg.textContent = `Account created for ${nameVal}! You can now log in.`;
-      successMsg.style.display = 'block';
-
-      const btn = form.querySelector('.signup-btn');
-      btn.disabled = true;
-      btn.textContent = 'Saved!';
-      setTimeout(() => {
-        window.location.href = 'chatlogin.html';
-      }, 300);
     };
 
     // ----- "Log in" link: go back to login page -----

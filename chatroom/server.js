@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 3000;
 const ROOM_NAME = 'Reality Check Room';
+const USERS_FILE = path.join(__dirname, 'users.json');
 const STATIC_DIRS = [
   path.join(__dirname, '..', 'public'),
   path.join(__dirname, '..', 'frontend')
@@ -29,7 +30,42 @@ function setNoCacheHeaders(res) {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 }
+function loadUsers() {
+  try {
+    if (!fs.existsSync(USERS_FILE)) {
+      return [];
+    }
+    const content = fs.readFileSync(USERS_FILE, 'utf8');
+    return content ? JSON.parse(content) : [];
+  } catch (error) {
+    console.error('Error loading users:', error);
+    return [];
+  }
+}
 
+function saveUsers(users) {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error saving users:', error);
+  }
+}
+
+function parseJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; });
+    req.on('end', () => {
+      if (!body) return resolve({});
+      try {
+        resolve(JSON.parse(body));
+      } catch (error) {
+        reject(error);
+      }
+    });
+    req.on('error', reject);
+  });
+}
 function resolveStaticFile(requestPath) {
   const decodedPath = decodeURIComponent((requestPath || '/').split('?')[0]);
   const normalizedPath = decodedPath === '/' ? '/index.html' : decodedPath;
@@ -60,6 +96,15 @@ function resolveStaticFile(requestPath) {
 }
 
 const server = http.createServer((req, res) => {
+  if (req.url && req.url.startsWith('/api/')) {
+    handleApiRequest(req, res).catch((error) => {
+      console.error('API error:', error);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Server error' }));
+    });
+    return;
+  }
+
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.writeHead(405, { 'Content-Type': 'text/plain' });
     res.end('Method not allowed');
@@ -202,6 +247,64 @@ setInterval(() => {
     ws.ping();
   });
 }, 30000);
+
+async function handleApiRequest(req, res) {
+  const sendJson = (status, body) => {
+    setNoCacheHeaders(res);
+    res.writeHead(status, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(body));
+  };
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+    res.end();
+    return;
+  }
+
+  if (req.url === '/api/signup' && req.method === 'POST') {
+    const { name, username, password, email } = await parseJsonBody(req);
+    if (!name || !username || !password || !email) {
+      sendJson(400, { error: 'Missing required fields' });
+      return;
+    }
+
+    const users = loadUsers();
+    if (users.find((u) => u.username.toLowerCase() === username.toLowerCase())) {
+      sendJson(409, { error: 'Username already exists' });
+      return;
+    }
+
+    const user = { name, username, password, email };
+    users.push(user);
+    saveUsers(users);
+    sendJson(201, { name: user.name, username: user.username });
+    return;
+  }
+
+  if (req.url === '/api/login' && req.method === 'POST') {
+    const { username, password } = await parseJsonBody(req);
+    if (!username || !password) {
+      sendJson(400, { error: 'Missing required fields' });
+      return;
+    }
+
+    const users = loadUsers();
+    const account = users.find((u) => u.username === username && u.password === password);
+    if (!account) {
+      sendJson(401, { error: 'Invalid username or password' });
+      return;
+    }
+
+    sendJson(200, { name: account.name, username: account.username });
+    return;
+  }
+
+  sendJson(404, { error: 'Not found' });
+}
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
