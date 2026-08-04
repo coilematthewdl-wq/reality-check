@@ -908,12 +908,23 @@
 
     function SummaryScreen({ deck, answers, onRestart }) {
       const [axis, setAxis] = React.useState('truth');
+      const validAnswers = answers.filter(Boolean);
+      const answerCount = validAnswers.length;
+      const hasRecharts = typeof Recharts !== 'undefined' && Recharts.ResponsiveContainer;
 
-      const overallScore = Math.round(answers.reduce((s, a) => s + a.points.combined, 0) / answers.length);
-      const truthAvg = Math.round(answers.reduce((s, a) => s + a.points.truthPts, 0) / answers.length);
-      const originAvg = Math.round(answers.reduce((s, a) => s + a.points.originPts, 0) / answers.length);
+      const overallScore = answerCount
+        ? Math.round(validAnswers.reduce((s, a) => s + a.points.combined, 0) / answerCount)
+        : 0;
+      const truthAvg = answerCount
+        ? Math.round(validAnswers.reduce((s, a) => s + a.points.truthPts, 0) / answerCount)
+        : 0;
+      const originAvg = answerCount
+        ? Math.round(validAnswers.reduce((s, a) => s + a.points.originPts, 0) / answerCount)
+        : 0;
 
-      const shareRows = deck.map((item, i) => ({ item, answer: answers[i] })).filter((r) => r.answer.share === true);
+      const shareRows = deck
+        .map((item, i) => ({ item, answer: answers[i] }))
+        .filter((r) => r.answer && r.answer.share === true);
       const totalShares = shareRows.length;
       const uncertainShares = shareRows.filter((r) => r.answer.truth >= 35 && r.answer.truth <= 65).length;
       const confidentWrongShares = shareRows.filter(
@@ -969,6 +980,8 @@
           ),
           chartData.length === 0 ?
             React.createElement('p', { className: 'gc-muted-text' }, 'Not enough data yet — play a few more rounds.') :
+            !hasRecharts ?
+            React.createElement('p', { className: 'gc-muted-text' }, 'Chart data is ready, but the chart library failed to load. The rest of the summary is still visible.') :
             React.createElement('div', { className: 'gc-chart-wrap' },
               React.createElement(Recharts.ResponsiveContainer, { width: '100%', height: 240 },
                 React.createElement(Recharts.BarChart, { data: chartData, margin: { top: 10, right: 10, left: -10, bottom: 0 } },
@@ -1012,11 +1025,11 @@
                   return React.createElement('tr', { key: item.id },
                     React.createElement('td', null, i + 1),
                     React.createElement('td', null, item.category),
-                    React.createElement('td', null, a.truth + '%'),
-                    React.createElement('td', null, a.origin + '%'),
+                    React.createElement('td', null, a ? a.truth + '%' : '-'),
+                    React.createElement('td', null, a ? a.origin + '%' : '-'),
                     React.createElement('td', null, (item.isTrue ? 'True' : 'False') + ' / ' + (item.isAIGenerated ? 'AI' : 'Authentic')),
-                    React.createElement('td', null, a.points.combined),
-                    React.createElement('td', null, a.share ? 'Yes' : 'No')
+                    React.createElement('td', null, a ? a.points.combined : '-'),
+                    React.createElement('td', null, a ? (a.share ? 'Yes' : 'No') : '-')
                   );
                 })
               )
@@ -1089,9 +1102,21 @@
           setShowMyMark(false);
           setScreen('round');
         } else {
+          if (!answers[currentIndex] && currentAnswer.share !== null) {
+            const points = computeRoundPoints(currentAnswer, deck[currentIndex]);
+            setAnswers((prev) => {
+              const next = [...prev];
+              next[currentIndex] = { ...currentAnswer, points };
+              return next;
+            });
+          }
           setScreen('summary');
           if (window.sendChatMessage) {
-            const score = Math.round(answers.reduce((s, a) => s + a.points.combined, 0) / answers.length);
+            const score = Math.round(
+              (answers.filter(Boolean).reduce((s, a) => s + a.points.combined, 0) +
+                (answers[currentIndex] ? 0 : computeRoundPoints(currentAnswer, deck[currentIndex]).combined)) /
+                deck.length
+            );
             window.sendChatMessage('Finished Gut Check! Score: ' + score + '/100', true);
           }
         }
