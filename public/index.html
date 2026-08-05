@@ -83,22 +83,6 @@
     background: #c49c31;
   }
   
-  .signup-link {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #8B96A3;
-  }
-  
-  .signup-link a {
-    color: #D4AF37;
-    text-decoration: none;
-  }
-  
-  .signup-link a:hover {
-    text-decoration: underline;
-  }
-  
   .error-msg {
     background: rgba(226,114,91,0.16);
     color: #E2725B;
@@ -115,56 +99,36 @@
 
 <div class="login-card">
   <div class="logo">Gut Check</div>
-  <div class="subtitle">Enter the room and vote on the truth</div>
+  <div class="subtitle">Pick a nickname and enter the room</div>
   
-  <div class="error-msg" id="errorMsg">Invalid credentials</div>
+  <div class="error-msg" id="errorMsg">Please enter a nickname</div>
   
-  <form id="loginForm" onsubmit="handleLogin(event)">
+  <form id="nicknameForm" onsubmit="handleNickname(event)">
     <div class="form-group">
-      <label>Username</label>
-      <input type="text" id="username" placeholder="Enter your username" required>
+      <label>Nickname</label>
+      <input type="text" id="nickname" placeholder="Enter your nickname" required>
     </div>
     
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="password" placeholder="Enter your password" required>
-    </div>
-    
-    <button type="submit" class="login-btn">Log In</button>
+    <button type="submit" class="login-btn">Enter Room</button>
   </form>
-  
-  <div class="signup-link">
-    Don't have an account? <a href="signup.html" onclick="window.location.href='signup.html'; return false;">Sign up</a>
-  </div>
 </div>
 
 <script>
-  function handleLogin(e) {
+  function handleNickname(e) {
     e.preventDefault();
-    
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+
+    const nickname = document.getElementById('nickname').value.trim();
     const errorMsg = document.getElementById('errorMsg');
-    
-    // Simple validation (replace with real auth later)
-    if (username === '' || password === '') {
-      errorMsg.textContent = 'Please fill in all fields';
+
+    if (nickname === '') {
+      errorMsg.textContent = 'Please enter a nickname';
       errorMsg.style.display = 'block';
       return;
     }
-    
-    const accounts = JSON.parse(localStorage.getItem('gut-check-accounts') || '[]');
-    const account = accounts.find(user => user.username === username && user.password === password);
-    
-    if (account) {
-      errorMsg.style.display = 'none';
-      localStorage.setItem('gut-check-current-user', JSON.stringify({ name: account.name, username: account.username }));
-      localStorage.setItem('reality-chat-username', account.name);
-      window.location.href = 'Chatproto.html';
-    } else {
-      errorMsg.textContent = 'Invalid username or password';
-      errorMsg.style.display = 'block';
-    }
+
+    errorMsg.style.display = 'none';
+    localStorage.setItem('reality-chat-username', nickname);
+    window.location.href = 'Chatproto.html';
   }
 </script>
 
